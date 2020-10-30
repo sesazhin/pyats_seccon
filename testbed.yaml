@@ -1,0 +1,136 @@
+testbed:
+
+  name: labpyats
+  
+  credentials:
+    default:
+      username: "%ENV{PYATS_USERNAME}"
+      password: "%ENV{PYATS_PASSWORD}"
+    enable:
+      password: "%ENV{PYATS_AUTH_PASS}"
+    line:
+      password: "%ENV{PYATS_AUTH_PASS}"
+
+devices:
+
+  EdgeFW:
+    alias: edgefw
+    os: asa
+    type: ASAv
+    platform: ASAv
+
+    connections:
+
+      console:
+        protocol: ssh
+        ip: 172.16.50.191
+        port: 22
+    custom:
+      abstraction:
+        order: [os, type]    
+
+  VPNFW:
+    alias: vpnfw
+    os: asa
+    type: ASAv
+    platform: ASAv
+
+    connections:
+
+      console:
+        protocol: ssh
+        ip: 172.16.50.192
+        port: 22
+    custom:
+      abstraction:
+        order: [os, type]
+
+  RTR1:
+    alias: rtr1
+    os: iosxe
+    type: CSR1000v
+    platform: CSR1000v
+
+    connections:
+
+      defaults:
+        class: unicon.Unicon
+      console:
+        protocol: ssh
+        ip: 172.16.50.193
+        port: 22
+    custom:
+      abstraction:
+        order: [os, type]
+        
+  RTR2:
+    alias: rtr2
+    os: iosxe
+    type: CSR1000v
+    platform: CSR1000v
+
+    connections:
+
+      defaults:
+        class: unicon.Unicon
+      console:
+        protocol: ssh
+        ip: 172.16.50.194
+        port: 22
+    custom:
+      abstraction:
+        order: [os, type]
+
+topology:
+  EdgeFW:
+    interfaces:
+      GigabitEthernet0/1:
+        ipv4: 198.18.32.191/24
+        link: edgefw-rtr1
+        type: ethernet
+      GigabitEthernet0/2:
+        ipv4: 198.18.33.191/24
+        link: edgefw-rtr2
+        type: ethernet
+      Management0/0:
+        ipv4: 172.16.50.191/24
+        link: mgmt
+        type: ethernet
+  VPNFW:
+    interfaces:
+      GigabitEthernet0/0:
+        ipv4: 198.18.31.192/24
+        link: vpnfw-rtr1-rtr2
+        type: ethernet
+      Management0/0:
+        ipv4: 172.16.50.192/24
+        link: mgmt
+        type: ethernet
+  RTR1:
+    interfaces:
+      GigabitEthernet1:
+        ipv4: 198.18.32.193/24
+        link: edgefw-rtr1
+        type: ethernet
+      GigabitEthernet2:
+        ipv4: 198.18.31.193/24
+        link: vpnfw-rtr1-rtr2
+        type: ethernet
+      GigabitEthernet3:
+        ipv4: 172.16.50.193/24
+        link: mgmt
+        type: ethernet
+  RTR2:
+    interfaces:
+      GigabitEthernet1:
+        ipv4: 198.18.33.194/24
+        link: edgefw-rtr2
+        type: ethernet
+      GigabitEthernet2:
+        ipv4: 198.18.31.194/24
+        link: vpnfw-rtr1-rtr2
+        type: ethernet
+      GigabitEthernet3:
+        ipv4: 172.16.50.194/24
+        link: mgmt
+        type: ethernet
