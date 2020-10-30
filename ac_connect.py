@@ -34,25 +34,34 @@ def init_logging() -> None:
     logger.addHandler(file_handler)
 
 
+def react_output_connect(output_lines: str) -> None:
+    for line in output_lines:
+        if line:
+            if re.search('error:',line):
+                logger.error(f'Error has occured: {line}')
+
+
+def ac_connect(command: str) -> None:
+    logger.info(f'running command: {command}')
+
+    pipe = subprocess.Popen(command, stdout=subprocess.PIPE)
+    stdout = pipe.communicate()[0]
+    logger.debug(f"stdout: {stdout.decode('utf-8')}")
+    
+    output_lines = re.split('\\n|\\r+|  >> |VPN> ', stdout.decode('utf-8'))
+
+    logger.debug(f"output_lines: {output_lines}")
+
+    react_output_connect(output_lines)
+
 def main() -> None:
     devnull = open(os.devnull, 'w')
 
     vpn_server_hostname = 'vpn.sec.lab'
     logger.info('Connecting to VPN')
     command_run = '/home/admin/pyats/vpn_connect.sh'
-    logger.info(f'running command: {command_run}')
-
-    pipe = subprocess.Popen(command_run, stdout=subprocess.PIPE)
-    stdout = pipe.communicate()[0]
-    pprint(stdout.decode('utf-8'))   
-    #stdout_str = stdout.decode('utf-8')
-    output_lines = re.split('\\n|\\r+|  >> |VPN> ', stdout.decode('utf-8'))
-
-    for line in output_lines:
-        if line:
-            if re.search('error:',line):
-                logger.error(f'Error has occured: {line}')
-
+    
+    ac_connect(command_run)
 
 if __name__ == '__main__':
     init_logging()
