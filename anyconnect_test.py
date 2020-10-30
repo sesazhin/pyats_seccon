@@ -123,6 +123,7 @@ class VerifyAnyconnect(aetest.Testcase):
             # log.error('Unable to establish VPN connection')
 
         if connection_successful:
+            log.info(banner('Going standby for 45 seconds to check Anyconnect state afterwards'))
             time.sleep(45)
             output_lines = self.ac_run_command(vpn_status_command)
             connection_status = self.react_output_status(output_lines)
@@ -136,7 +137,7 @@ class VerifyAnyconnect(aetest.Testcase):
                 if connection_status:
                     log.error(banner('Unable to disconnect VPN connection'))
                 else:
-                    log.error(banner('VPN connection has been disconnected successfully'))
+                    log.info(banner('VPN connection has been disconnected successfully'))
             else:
                 self.failed('VPN connection has been established but then failed')
                 # log.error('VPN connection has been established but then failed')
