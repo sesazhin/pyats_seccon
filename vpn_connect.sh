@@ -1,4 +1,3 @@
-$ vim vpn_connect.sh
 #!/bin/bash
 
 VPN_SERVER="vpn.sec.lab"
