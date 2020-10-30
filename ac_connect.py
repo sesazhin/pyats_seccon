@@ -1,12 +1,13 @@
-#!/usr/bin/env python3.7
+#!/usr/bin/env python3
 
 import logging
 import logging.handlers
 import os
+from pprint import pprint
+import re
 import shlex
 import subprocess
 import sys
-
 
 def init_logging() -> None:
     global logger
@@ -41,12 +42,26 @@ def main() -> None:
     command_run = '/home/admin/pyats/vpn_connect.sh'
     logger.info(f'running command: {command_run}')
 
+    pipe = subprocess.Popen(command_run, stdout=subprocess.PIPE)
+    stdout = pipe.communicate()[0]
+    pprint(stdout.decode('utf-8'))   
+    #stdout_str = stdout.decode('utf-8')
+    output_lines = re.split('\\n|\\r+|  >> |VPN> ', stdout.decode('utf-8'))
 
-    code = subprocess.call(command_run, shell=True, stdin=devnull, stdout=devnull , stderr=devnull)
+    for line in output_lines:
+        if line:
+            if re.search('error:',line):
+                logger.error(f'Error has occured: {line}')
+
+    # pprint.pprint(f'STDOUT: {stdout}')
     
+
+
+    # code = subprocess.call(command_run, shell=True, stdin=devnull, stdout=devnull , stderr=devnull)  
+
     # code = subprocess.call(command_run, shell=True, stderr=devnull)
 
-    logger.info(code)
+    # logger.info(code)
 
 
 if __name__ == '__main__':
