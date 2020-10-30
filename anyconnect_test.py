@@ -3,6 +3,11 @@
 # To get a logger for the script
 import logging
 
+import re
+import shlex
+import subprocess
+import time
+
 from pyats import aetest
 from pyats.log.utils import banner
 
@@ -69,7 +74,7 @@ class VerifyAnyconnect(aetest.Testcase):
                 if re.search('error:', line):
                     log.error(f'Error has occured: {line}')
                     connection_successful = False
-    
+
         return connection_successful
 
     def react_output_status(self, output_lines: str) -> bool:
