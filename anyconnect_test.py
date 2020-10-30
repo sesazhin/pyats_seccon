@@ -112,6 +112,8 @@ class VerifyAnyconnect(aetest.Testcase):
         vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
         vpn_disconnect_command = '/opt/cisco/anyconnect/bin/vpn disconnect'
 
+        log.info(banner('Trying to establish Anyconnect to VPNFW. Please hold on...'))
+
         output_lines = self.ac_run_command(vpn_connect_command)
         connection_successful = self.react_output_connect(output_lines)
         if connection_successful:
