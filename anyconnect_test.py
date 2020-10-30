@@ -11,6 +11,8 @@ import time
 from pyats import aetest
 from pyats.log.utils import banner
 
+from typing import List
+
 # Genie Imports
 from genie.conf import Genie
 
@@ -23,7 +25,7 @@ from pyats.topology import loader
 # Get your logger for your script
 global log
 log = logging.getLogger(__name__)
-log.level = logging.ERROR
+log.setLevel(logging.INFO)
 
 
 class MyCommonSetup(aetest.CommonSetup):
@@ -66,7 +68,7 @@ class VerifyAnyconnect(aetest.Testcase):
     def setup(self):
         pass
 
-    def react_output_connect(self, output_lines: str) -> bool:
+    def react_output_connect(self, output_lines: List) -> bool:
         connection_successful = True
 
         for line in output_lines:
@@ -77,7 +79,7 @@ class VerifyAnyconnect(aetest.Testcase):
 
         return connection_successful
 
-    def react_output_status(self, output_lines: str) -> bool:
+    def react_output_status(self, output_lines: List) -> bool:
         connection_successful = True
 
         for line in output_lines:
@@ -88,7 +90,7 @@ class VerifyAnyconnect(aetest.Testcase):
 
         return connection_successful
 
-    def ac_run_command(self, command: str) -> str:
+    def ac_run_command(self, command: str) -> List:
         log.info(f'running command: {command}')
 
         command = shlex.split(command)
@@ -113,10 +115,10 @@ class VerifyAnyconnect(aetest.Testcase):
         output_lines = self.ac_run_command(vpn_connect_command)
         connection_successful = self.react_output_connect(output_lines)
         if connection_successful:
-            log.info('VPN connection has been established successfully')
+            log.info(banner('VPN connection has been established successfully'))
         else:
             self.failed('Unable to establish VPN connection')
-            log.error('Unable to establish VPN connection')
+            # log.error('Unable to establish VPN connection')
 
         if connection_successful:
             time.sleep(45)
@@ -124,40 +126,18 @@ class VerifyAnyconnect(aetest.Testcase):
             connection_status = self.react_output_status(output_lines)
 
             if connection_status:
-                log.info('VPN connection is stable')
+                log.info(banner('VPN connection is stable'))
 
                 output_lines = self.ac_run_command(vpn_disconnect_command)
                 connection_status = self.react_output_status(output_lines)
 
                 if connection_status:
-                    log.error('Unable to disconnect VPN connection')
+                    log.error(banner('Unable to disconnect VPN connection'))
                 else:
-                    log.info('VPN connection has been disconnected succesfully')
+                    log.error(banner('VPN connection has been disconnected successfully'))
             else:
                 self.failed('VPN connection has been established but then failed')
-                log.error('VPN connection has been established but then failed')
-
-
-class VerifyLogging(aetest.Testcase):
-    """
-    VerifyLogging Testcase - collect show logging information from devices
-    Verify that all devices do not have 'ERROR|WARN' messages in logs
-    """
-
-    @aetest.setup
-    def setup(self):
-        pass
-
-    @aetest.test
-    def error_logs(self):
-        any_device = self.parent.parameters['dev'][0]
-        any_device.log_user(enable=True)
-        output = any_device.execute('show logging | i ERROR|WARN')
-
-        if len(output) > 0:
-            self.failed('Found ERROR in log, review logs first')
-        else:
-            pass
+                # log.error('VPN connection has been established but then failed')
 
 
 if __name__ == '__main__':
