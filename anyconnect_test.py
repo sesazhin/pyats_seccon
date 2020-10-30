@@ -117,12 +117,10 @@ class VerifyAnyconnect(aetest.Testcase):
         if connection_successful:
             log.info(banner('VPN connection has been established successfully'))
         else:
-            self.failed('Unable to establish VPN connection')
-            # log.error('Unable to establish VPN connection')
-
-        if not connection_successful:
             aetest.skip.affix(section=VerifyAnyconnect.anyconnect_stable_test,
                               reason="Skipping 'anyconnect_stable_test' since VPN connection hasn't been established")
+
+            self.failed('Unable to establish VPN connection')
 
     @aetest.test
     def anyconnect_stable_test(self):
@@ -147,7 +145,6 @@ class VerifyAnyconnect(aetest.Testcase):
                 log.info(banner('VPN connection has been disconnected successfully'))
         else:
             self.failed('VPN connection has been established but then failed')
-            # log.error('VPN connection has been established but then failed')
 
 
 if __name__ == '__main__':
