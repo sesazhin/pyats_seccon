@@ -36,20 +36,15 @@ def init_logging() -> None:
 def main() -> None:
     devnull = open(os.devnull, 'w')
 
-    # command_run = '/home/admin/pyats/vpn_connect.sh'
-    # command_run = shlex.split('/home/admin/pyats/vpn_connect.sh')
-    
     vpn_server_hostname = 'vpn.sec.lab'
     logger.info('Connecting to VPN')
     command_run = '/home/admin/pyats/vpn_connect.sh'
-    # command_run = shlex.split(f'/opt/cisco/anyconnect/bin/vpn -s < /home/admin/.vpn_creds connect {vpn_server_hostname}')
     logger.info(f'running command: {command_run}')
 
-    # logger.debug(f'running command: {command_run}')
 
-    # code = subprocess.call(command_run, shell=True, stdin=devnull, stdout=devnull , stderr=devnull)
+    code = subprocess.call(command_run, shell=True, stdin=devnull, stdout=devnull , stderr=devnull)
     
-    code = subprocess.call(command_run, shell=True, stderr=devnull)
+    # code = subprocess.call(command_run, shell=True, stderr=devnull)
 
     logger.info(code)
 
