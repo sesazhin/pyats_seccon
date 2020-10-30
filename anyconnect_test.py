@@ -74,7 +74,7 @@ class VerifyAnyconnect(aetest.Testcase):
         for line in output_lines:
             if line:
                 if re.search('error:', line):
-                    log.error(f'Error has occured: {line}')
+                    log.error(banner(f'Error has occured: {line}'))
                     connection_successful = False
 
         return connection_successful
@@ -91,7 +91,7 @@ class VerifyAnyconnect(aetest.Testcase):
         return connection_successful
 
     def ac_run_command(self, command: str) -> List:
-        log.info(f'running command: {command}')
+        log.debug(f'running command: {command}')
 
         command = shlex.split(command)
 
