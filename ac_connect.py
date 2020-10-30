@@ -53,16 +53,6 @@ def main() -> None:
             if re.search('error:',line):
                 logger.error(f'Error has occured: {line}')
 
-    # pprint.pprint(f'STDOUT: {stdout}')
-    
-
-
-    # code = subprocess.call(command_run, shell=True, stdin=devnull, stdout=devnull , stderr=devnull)  
-
-    # code = subprocess.call(command_run, shell=True, stderr=devnull)
-
-    # logger.info(code)
-
 
 if __name__ == '__main__':
     init_logging()
