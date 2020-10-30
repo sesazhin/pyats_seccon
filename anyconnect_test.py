@@ -105,7 +105,6 @@ class VerifyAnyconnect(aetest.Testcase):
 
         return output_lines
 
-
     @aetest.test
     def anyconnect_test(self):
         vpn_connect_command = '/home/admin/pyats/vpn_connect.sh'
@@ -122,25 +121,31 @@ class VerifyAnyconnect(aetest.Testcase):
             self.failed('Unable to establish VPN connection')
             # log.error('Unable to establish VPN connection')
 
-        if connection_successful:
-            log.info(banner('Going standby for 45 seconds to check Anyconnect state afterwards'))
-            time.sleep(45)
-            output_lines = self.ac_run_command(vpn_status_command)
+        if not connection_successful:
+            aetest.skip.affix(section=VerifyAnyconnect.anyconnect_stable_test,
+                              reason="Skipping 'anyconnect_stable_test' since VPN connection hasn't been established")
+
+    @aetest.test
+    def anyconnect_stable_test(self):
+        log.info(banner('Going standby for 45 seconds to check Anyconnect state afterwards'))
+        time.sleep(45)
+
+        output_lines = self.ac_run_command(vpn_status_command)
+        connection_status = self.react_output_status(output_lines)
+
+        if connection_status:
+            log.info(banner('VPN connection is stable'))
+
+            output_lines = self.ac_run_command(vpn_disconnect_command)
             connection_status = self.react_output_status(output_lines)
 
             if connection_status:
-                log.info(banner('VPN connection is stable'))
-
-                output_lines = self.ac_run_command(vpn_disconnect_command)
-                connection_status = self.react_output_status(output_lines)
-
-                if connection_status:
-                    log.error(banner('Unable to disconnect VPN connection'))
-                else:
-                    log.info(banner('VPN connection has been disconnected successfully'))
+                log.error(banner('Unable to disconnect VPN connection'))
             else:
-                self.failed('VPN connection has been established but then failed')
-                # log.error('VPN connection has been established but then failed')
+                log.info(banner('VPN connection has been disconnected successfully'))
+        else:
+            self.failed('VPN connection has been established but then failed')
+            # log.error('VPN connection has been established but then failed')
 
 
 if __name__ == '__main__':
