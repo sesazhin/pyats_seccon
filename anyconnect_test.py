@@ -64,9 +64,13 @@ class VerifyAnyconnect(aetest.Testcase):
     check connection establishes successfully and isn't interrupted afterwards.
     """
 
+    self.connection_successful = False
+
+    '''
     def __init__(self):
         self.connection_successful = False
         super().__init__(length, length)
+    '''
 
     @aetest.setup
     def setup(self):
