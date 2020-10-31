@@ -66,6 +66,7 @@ class VerifyAnyconnect(aetest.Testcase):
 
     def __init__(self):
         self.connection_successful = False
+        super().__init__(length, length)
 
     @aetest.setup
     def setup(self):
