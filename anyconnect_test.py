@@ -64,31 +64,34 @@ class VerifyAnyconnect(aetest.Testcase):
     check connection establishes successfully and isn't interrupted afterwards.
     """
 
+    def __init__(self):
+        self.connection_successful = False
+
     @aetest.setup
     def setup(self):
         pass
 
     def react_output_connect(self, output_lines: List) -> bool:
-        connection_successful = True
+        self.connection_successful = True
 
         for line in output_lines:
             if line:
                 if re.search('error:', line):
                     log.error(banner(f'Error has occured: {line}'))
-                    connection_successful = False
+                    self.connection_successful = False
 
-        return connection_successful
+        return self.connection_successful
 
     def react_output_status(self, output_lines: List) -> bool:
-        connection_successful = True
+        self.connection_successful = True
 
         for line in output_lines:
             if line:
                 if re.search('state: Disconnected', line):
                     log.debug(f'Anyconnect is disconnected: {line}')
-                    connection_successful = False
+                    self.connection_successful = False
 
-        return connection_successful
+        return self.connection_successful
 
     def ac_run_command(self, command: str) -> List:
         log.debug(f'running command: {command}')
@@ -113,8 +116,8 @@ class VerifyAnyconnect(aetest.Testcase):
         log.info(banner('Trying to establish Anyconnect to VPNFW. Please hold on...'))
 
         output_lines = self.ac_run_command(vpn_connect_command)
-        connection_successful = self.react_output_connect(output_lines)
-        if connection_successful:
+        self.connection_successful = self.react_output_connect(output_lines)
+        if self.connection_successful:
             log.info(banner('VPN connection has been established successfully'))
         else:
             aetest.skip.affix(section=VerifyAnyconnect.anyconnect_stable_test,
