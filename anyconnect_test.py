@@ -35,93 +35,22 @@ class MyCommonSetup(aetest.CommonSetup):
     """
     pass
 
+
 vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
 vpn_disconnect_command = '/opt/cisco/anyconnect/bin/vpn disconnect'
+vpn_connect_command = '/home/admin/pyats/vpn_connect.sh'
 
 
-class VerifyAnyconnect(aetest.Testcase):
-    """
-    VerifyLogging Testcase - connect to VPNFW with Anyconnect and
-    check connection establishes successfully and isn't interrupted afterwards.
-    """
+def react_output_connect(output_lines: List) -> bool:
+    connection_successful = True
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.connection_successful = False 
+    for line in output_lines:
+        if line:
+            if re.search('error:', line):
+                log.error(banner(f'Error has occured: {line}'))
+                connection_successful = False
 
-    '''
-    @aetest.setup
-    def setup(self):
-        pass
-    '''
-
-    def react_output_connect(self, output_lines: List) -> bool:
-        self.connection_successful = True
-
-        for line in output_lines:
-            if line:
-                if re.search('error:', line):
-                    log.error(banner(f'Error has occured: {line}'))
-                    self.connection_successful = False
-
-        return self.connection_successful
-
-    def react_output_status(self, output_lines: List) -> bool:
-        self.connection_successful = True
-
-        for line in output_lines:
-            if line:
-                if re.search('state: Disconnected', line):
-                    log.debug(f'Anyconnect is disconnected: {line}')
-                    self.connection_successful = False
-
-        return self.connection_successful
-
-    def ac_run_command(self, command: str) -> List:
-        log.debug(f'running command: {command}')
-
-        command = shlex.split(command)
-
-        pipe = subprocess.Popen(command, stdout=subprocess.PIPE)
-        stdout = pipe.communicate()[0]
-        log.debug(f"stdout: {stdout.decode('utf-8')}")
-
-        output_lines = re.split('\\n|\\r+|  >> |VPN> ', stdout.decode('utf-8'))
-
-        log.debug(f"output_lines: {output_lines}")
-
-        return output_lines
-
-    @aetest.test
-    def anyconnect_test(self):
-        vpn_connect_command = '/home/admin/pyats/vpn_connect.sh'
-
-
-        log.info(banner('Trying to establish Anyconnect to VPNFW. Please hold on...'))
-
-        output_lines = self.ac_run_command(vpn_connect_command)
-        self.connection_successful = self.react_output_connect(output_lines)
-        if self.connection_successful:
-            log.info(banner('VPN connection has been established successfully'))
-        else:
-            aetest.skip.affix(section=VerifyAnyconnect.anyconnect_stable_test,
-                              reason="Skipping 'anyconnect_stable_test' since VPN connection hasn't been established")
-
-            self.failed('Unable to establish VPN connection')
-
-    @aetest.test
-    def anyconnect_stable_test(self):
-
-        log.info(banner('Going standby for 45 seconds to check Anyconnect state afterwards'))
-        time.sleep(2)
-
-        output_lines = self.ac_run_command(vpn_status_command)
-        connection_status = self.react_output_status(output_lines)
-
-        if connection_status:
-            log.info(banner('VPN connection is stable'))
-        else:
-            self.failed('VPN connection has been established but then failed')
+    return connection_successful
 
 
 def ac_run_command(command: str) -> List:
@@ -150,6 +79,46 @@ def react_output_status(output_lines: List) -> bool:
                 connection_successful = False
 
     return connection_successful
+
+
+class VerifyAnyconnect(aetest.Testcase):
+    """
+    VerifyLogging Testcase - connect to VPNFW with Anyconnect and
+    check connection establishes successfully and isn't interrupted afterwards.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.connection_successful = False
+
+    @aetest.test
+    def anyconnect_test(self):
+
+        log.info(banner('Trying to establish Anyconnect to VPNFW. Please hold on...'))
+
+        output_lines = ac_run_command(vpn_connect_command)
+        self.connection_successful = react_output_connect(output_lines)
+        if self.connection_successful:
+            log.info(banner('VPN connection has been established successfully'))
+        else:
+            aetest.skip.affix(section=VerifyAnyconnect.anyconnect_stable_test,
+                              reason="Skipping 'anyconnect_stable_test' since VPN connection hasn't been established")
+
+            self.failed('Unable to establish VPN connection')
+
+    @aetest.test
+    def anyconnect_stable_test(self):
+
+        log.info(banner('Going standby for 45 seconds to check Anyconnect state afterwards'))
+        time.sleep(2)
+
+        output_lines = ac_run_command(vpn_status_command)
+        connection_status = react_output_status(output_lines)
+
+        if connection_status:
+            log.info(banner('VPN connection is stable'))
+        else:
+            self.failed('VPN connection has been established but then failed')
 
 
 class MyCommonCleanup(aetest.CommonCleanup):
