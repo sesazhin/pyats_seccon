@@ -12,6 +12,7 @@ from pyats import aetest
 from pyats.log.utils import banner
 
 from typing import List
+from typing import Tuple
 
 # Genie Imports
 from genie.conf import Genie
