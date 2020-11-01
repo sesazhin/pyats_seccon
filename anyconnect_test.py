@@ -35,6 +35,9 @@ class MyCommonSetup(aetest.CommonSetup):
     """
     pass
 
+vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
+vpn_disconnect_command = '/opt/cisco/anyconnect/bin/vpn disconnect'
+
 
 class VerifyAnyconnect(aetest.Testcase):
     """
@@ -108,8 +111,6 @@ class VerifyAnyconnect(aetest.Testcase):
 
     @aetest.test
     def anyconnect_stable_test(self):
-        vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
-        vpn_disconnect_command = '/opt/cisco/anyconnect/bin/vpn disconnect'
 
         log.info(banner('Going standby for 45 seconds to check Anyconnect state afterwards'))
         time.sleep(45)
