@@ -49,7 +49,7 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
         self.command = f'capture asp-tcp-o type asp-drop match tcp host 198.18.31.192 eq 443 host 10.207.195.220'
         log.info(banner(f'Running command: {self.command}'))
 
-        edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
+        self.edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
         log.info(edgefw)
         command_output = edgefw.execute(self.command, log_stdout=True)
         log.info(command_output)
@@ -59,7 +59,7 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
         self.command = f'show capture asp packet-number 1'
         log.info(banner(f'Running command: {self.command}'))
 
-        show_capture_output = edgefw.execute(self.command, log_stdout=True)
+        show_capture_output = self.edgefw.execute(self.command, log_stdout=True)
         log.info(show_capture_output)
 
     @aetest.cleanup
@@ -67,7 +67,7 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
         self.command = f'no capture asp-tcp-o'
         log.info(banner(f'Running command: {self.command}'))
 
-        command_output = edgefw.execute(self.command, log_stdout=True)
+        command_output = self.edgefw.execute(self.command, log_stdout=True)
         log.info(command_output)
 
 
