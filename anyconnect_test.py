@@ -107,7 +107,7 @@ class VerifyAnyconnect(aetest.Testcase):
     def anyconnect_stable_test(self):
 
         log.info(banner('Going standby for 45 seconds to check Anyconnect state afterwards'))
-        time.sleep(45)
+        time.sleep(2)
 
         output_lines = ac_run_command(self.vpn_status_command)
         connection_status = react_output_status(output_lines)
