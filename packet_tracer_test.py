@@ -60,6 +60,7 @@ class MyCommonSetup(aetest.CommonSetup):
         # Pass list of devices to testcases
         self.parent.parameters.update(dev=device_list)
 
+
 '''
 parameters = {
     'interface': 'inet',
@@ -67,6 +68,7 @@ parameters = {
     'destination_ip': '198.18.31.192'
 }
 '''
+
 
 class VerifyPacketTracer(aetest.Testcase):
     """
