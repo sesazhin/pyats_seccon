@@ -61,6 +61,12 @@ class MyCommonSetup(aetest.CommonSetup):
         self.parent.parameters.update(dev=device_list)
 
 
+parameters = {
+    'interface': 'inet',
+    'source_ip': '10.207.195.220',
+    'destination_ip': '198.18.31.192'
+}
+
 class VerifyPacketTracer(aetest.Testcase):
     """
     VerifyLogging Testcase - connect to VPNFW with Anyconnect and
@@ -69,8 +75,9 @@ class VerifyPacketTracer(aetest.Testcase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.command = 'packet-tracer input inet udp 10.207.195.220 6500 198.18.31.192 443 xml'
-        self.command2 = 'packet-tracer input inet udp 10.207.195.220 6500 10.207.195.231 443 xml'
+
+        self.command = f'packet-tracer input {parameters["interface"]} udp {parameters["source_ip"]} 6500 {parameters["destination_ip"]} 443 xml'
+        self.command2 = f'packet-tracer input inet udp 10.207.195.220 6500 10.207.195.231 443 xml'
 
     def get_action_allow(self, rootxml) -> bool:
         result_action = rootxml.find('./result/action')
