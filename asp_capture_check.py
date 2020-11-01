@@ -54,6 +54,16 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
         packet_tracer_output = edgefw.execute(self.command, log_stdout=True)
         log.info(packet_tracer_output)
 
+    @aetest.cleanup
+    def disable_capture(self):
+        self.command = f'no capture asp-tcp-o'
+        log.info(banner(f'Running command: {self.command}'))
+
+        edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
+        log.info(edgefw)
+        packet_tracer_output = edgefw.execute(self.command, log_stdout=True)
+        log.info(packet_tracer_output)
+        
 
 class MyCommonCleanup(anyconnect_test.MyCommonCleanup):
     """
