@@ -113,7 +113,7 @@ class VerifyAnyconnect(aetest.Testcase):
     def anyconnect_stable_test(self):
 
         log.info(banner('Going standby for 45 seconds to check Anyconnect state afterwards'))
-        time.sleep(45)
+        time.sleep(2)
 
         output_lines = self.ac_run_command(vpn_status_command)
         connection_status = self.react_output_status(output_lines)
@@ -141,15 +141,15 @@ def ac_run_command(command: str) -> List:
 
 
 def react_output_status(output_lines: List) -> bool:
-    self.connection_successful = True
+    connection_successful = True
 
     for line in output_lines:
         if line:
             if re.search('state: Disconnected', line):
                 log.debug(f'Anyconnect is disconnected: {line}')
-                self.connection_successful = False
+                connection_successful = False
 
-    return self.connection_successful
+    return connection_successful
 
 
 class MyCommonCleanup(aetest.CommonCleanup):
@@ -159,6 +159,8 @@ class MyCommonCleanup(aetest.CommonCleanup):
 
     @aetest.subsection
     def ac_disconnect(self):
+        vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
+        vpn_disconnect_command = '/opt/cisco/anyconnect/bin/vpn disconnect'
         output_lines = ac_run_command(vpn_status_command)
         connection_status = react_output_status(output_lines)
 
