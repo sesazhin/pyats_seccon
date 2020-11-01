@@ -44,6 +44,7 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
     VerifyASPCapture Testcase - connect to VPNFW and check VPN connection is not dropped by firewall
     """
 
+    '''
     def get_asp_drop_reason(self, asp_drop_capture: str) -> str:
         match_asp_drop = re.match(r'.*(Drop-reason: )\((.*)\) (.*)', asp_drop_capture)
 
@@ -51,6 +52,28 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
         drop_reason = match_asp_drop.group(3)
 
         return f'Drop code: "{drop_code}". Drop reason: "{drop_reason}".'
+    '''
+
+    def get_asp_drop_reason(self, show_capture_output: str) -> str:
+        capture_output_list = show_capture_output.splitlines()
+        asp_drop_reason = ''
+        log.debug(banner(capture_output_list))
+
+        for line in capture_output_list:
+            log.debug(banner(f'line = {line}'))
+            match_asp_drop = re.match(r'.*(Drop-reason: )\((.*)\) (.*)', line)
+            log.debug(banner(match_asp_drop))
+
+            if match_asp_drop:
+                drop_code = match_asp_drop.group(2)
+                drop_reason = match_asp_drop.group(3)
+                asp_drop_reason = f'Drop code: "{drop_code}". Drop reason: "{drop_reason}".'
+                break
+
+            else:
+                asp_drop_reason = "Drop string hasn't been found in the capture."
+
+        return asp_drop_reason
 
     @aetest.setup
     def enable_capture(self):
@@ -70,7 +93,6 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
         log.info(show_capture_output)
 
         asp_drop_reason = self.get_asp_drop_reason(show_capture_output)
-
         log.info(banner(asp_drop_reason))
 
     '''
