@@ -27,6 +27,8 @@ global log
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
+import xml.etree.ElementTree
+
 
 class MyCommonSetup(aetest.CommonSetup):
     """
@@ -68,6 +70,80 @@ class VerifyPacketTracer(aetest.Testcase):
         super().__init__(*args, **kwargs)
         self.command = 'packet-tracer input inet udp 10.207.195.220 6500 198.18.31.192 443 xml'
 
+    def get_action_allow(self, rootxml) -> bool:
+        result_action = rootxml.find('./result/action')
+
+        if result_action is not None:
+            if result_action.text.lower() == 'allow':
+                return True
+            else:
+                return False
+        else:
+            raise ValueError('Packet-tracer output lacks result action')
+
+    def get_drop_phase(self, rootxml) -> Tuple:
+        phase_id_text = ''
+        phase_type_text = ''
+        phase_subtype_text = ''
+        phase_config_text = ''
+        phase_extra_text = ''
+        for phase in rootxml:
+            log.debug(phase.tag)
+
+            phase_result = phase.find('./result')
+            if phase_result is not None:
+                log.debug(phase_result.text)
+                if phase_result.text.lower() == 'drop':
+
+                    phase_id = phase.find('./id')
+                    if phase_id is not None:
+                        phase_id_text = phase_id.text.replace('\n', '')
+
+                    phase_type = phase.find('./type')
+                    if phase_type is not None:
+                        phase_type_text = phase_type.text.replace('\n', '')
+
+                    phase_subtype = phase.find('./subtype')
+                    if phase_subtype is not None:
+                        phase_subtype_text = phase_subtype.text.replace('\n', '')
+
+                    phase_config = phase.find('./config')
+                    if phase_config is not None:
+                        phase_config_text = phase_config.text.replace('\n', '')
+
+                    phase_extra = phase.find('./extra')
+                    if phase_extra is not None:
+                        phase_extra_text = phase_extra.text.replace('\n', '')
+
+                    break
+
+        return phase_id_text, phase_type_text, phase_subtype_text, phase_config_text, phase_extra_text
+
+    def get_drop_details(self, drop_details) -> str:
+        print_drop_notification = 'Connection has been dropped:\n'
+        print_stage_id = f'Drop on stage: #{drop_details[0]}.'
+        print_stage_type = f' Drop stage: "{drop_details[1]}".'
+
+        if drop_details[2]:
+            print_stage_subtype = f' Drop substage: "{drop_details[2]}".'
+        else:
+            print_stage_subtype = ''
+
+        if drop_details[3]:
+            print_stage_config = f' FW configuration: "{drop_details[3]}".'
+        else:
+            print_stage_config = ''
+
+        if drop_details[4]:
+            print_stage_extra = f' Additional information: "{drop_details[4]}".'
+        else:
+            print_stage_extra = ''
+
+        print_drop_details = print_drop_notification + print_stage_id + print_stage_type + \
+                             print_stage_subtype + print_stage_config + print_stage_extra
+
+        return print_drop_details
+
     @aetest.setup
     def setup(self):
         pass
@@ -77,9 +153,21 @@ class VerifyPacketTracer(aetest.Testcase):
         # devices = self.parent.parameters['dev']['EdgeFW']
         edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
         log.debug(edgefw)
-        command_output = edgefw.execute(self.command, log_stdout=True)
-        log.info(command_output)
-        # log.info(banner('Trying to establish Anyconnect to VPNFW. Please hold on...'))
+        packet_tracer_output = edgefw.execute(self.command, log_stdout=True)
+        log.info(packet_tracer_output)
+
+        try:
+            packet_tracer_output = f'<packet-tracer>\n{packet_tracer_output}\n</packet-tracer>'
+            root = xml.etree.ElementTree.fromstring(packet_tracer_output)
+            if not self.get_action_allow(root):
+                drop_details = self.get_drop_phase(root)
+                self.failed(self.get_drop_details(drop_details))
+
+            else:
+                log.info(banner('Connection has been allowed.'))
+
+        except ValueError as e:
+            self.failed(e)
 
 
 if __name__ == '__main__':
