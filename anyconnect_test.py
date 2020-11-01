@@ -119,16 +119,59 @@ class VerifyAnyconnect(aetest.Testcase):
 
         if connection_status:
             log.info(banner('VPN connection is stable'))
+        else:
+            self.failed('VPN connection has been established but then failed')
 
-            output_lines = self.ac_run_command(vpn_disconnect_command)
-            connection_status = self.react_output_status(output_lines)
+
+def ac_run_command(command: str) -> List:
+    log.debug(f'running command: {command}')
+
+    command = shlex.split(command)
+
+    pipe = subprocess.Popen(command, stdout=subprocess.PIPE)
+    stdout = pipe.communicate()[0]
+    log.debug(f"stdout: {stdout.decode('utf-8')}")
+
+    output_lines = re.split('\\n|\\r+|  >> |VPN> ', stdout.decode('utf-8'))
+
+    log.debug(f"output_lines: {output_lines}")
+
+    return output_lines
+
+
+def react_output_status(output_lines: List) -> bool:
+    self.connection_successful = True
+
+    for line in output_lines:
+        if line:
+            if re.search('state: Disconnected', line):
+                log.debug(f'Anyconnect is disconnected: {line}')
+                self.connection_successful = False
+
+    return self.connection_successful
+
+
+class MyCommonCleanup(aetest.CommonCleanup):
+    """
+    CommonCleanup class to disconnect Anyconnect after the tests
+    """
+
+    @aetest.subsection
+    def ac_disconnect(self):
+        output_lines = ac_run_command(vpn_status_command)
+        connection_status = react_output_status(output_lines)
+
+        if connection_status:
+            output_lines = ac_run_command(vpn_disconnect_command)
+            connection_status = react_output_status(output_lines)
 
             if connection_status:
                 log.error(banner('Unable to disconnect VPN connection'))
             else:
                 log.info(banner('VPN connection has been disconnected successfully'))
-        else:
-            self.failed('VPN connection has been established but then failed')
+
+    @aetest.subsection
+    def wait_before_send_email(self):
         log.debug(banner('Waiting for 2 seconds to allow Anyconnect to disconnect to send email after'))
         time.sleep(2)
 
