@@ -33,29 +33,7 @@ class MyCommonSetup(aetest.CommonSetup):
     CommonSetup class to prepare for testcases
     Establishes connections to all devices in testbed
     """
-
-    @aetest.subsection
-    def establish_connections(self, testbed):
-        """
-        Establishes connections to all devices in testbed
-        :param testbed:
-        :return:
-        """
-
-        genie_testbed = Genie.init(testbed)
-        self.parent.parameters['testbed'] = genie_testbed
-        device_list = []
-        for device in genie_testbed.devices.values():
-            log.info(banner(
-                f"Connect to device '{device.name}'"))
-            try:
-                device.connect(log_stdout=False)
-            except errors.ConnectionError:
-                self.failed(f"Failed to establish "
-                            f"connection to '{device.name}'")
-            device_list.append(device)
-        # Pass list of devices to testcases
-        self.parent.parameters.update(dev=device_list)
+    pass
 
 
 class VerifyAnyconnect(aetest.Testcase):
@@ -68,9 +46,11 @@ class VerifyAnyconnect(aetest.Testcase):
         super().__init__(*args, **kwargs)
         self.connection_successful = False 
 
+    '''
     @aetest.setup
     def setup(self):
         pass
+    '''
 
     def react_output_connect(self, output_lines: List) -> bool:
         self.connection_successful = True
@@ -149,6 +129,7 @@ class VerifyAnyconnect(aetest.Testcase):
                 log.info(banner('VPN connection has been disconnected successfully'))
         else:
             self.failed('VPN connection has been established but then failed')
+        log.debug(banner('Waiting for 2 seconds to allow Anyconnect to disconnect to send email after'))
         time.sleep(2)
 
 
