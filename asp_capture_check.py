@@ -36,7 +36,7 @@ class MyCommonSetup(aetest.CommonSetup):
     """
     pass
 
-
+'''
 vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
 vpn_disconnect_command = '/opt/cisco/anyconnect/bin/vpn disconnect'
 vpn_connect_command = '/home/admin/pyats/vpn_connect.sh'
@@ -80,7 +80,7 @@ def react_output_status(output_lines: List) -> bool:
                 connection_successful = False
 
     return connection_successful
-
+'''
 
 class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
     """
@@ -91,7 +91,6 @@ class MyCommonCleanup(anyconnect_test.MyCommonCleanup):
     """
     CommonCleanup class to disconnect Anyconnect after the tests
     """
-
 
 
 if __name__ == '__main__':
