@@ -149,6 +149,7 @@ class VerifyAnyconnect(aetest.Testcase):
                 log.info(banner('VPN connection has been disconnected successfully'))
         else:
             self.failed('VPN connection has been established but then failed')
+        time.sleep(2)
 
 
 if __name__ == '__main__':
