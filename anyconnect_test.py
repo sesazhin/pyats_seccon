@@ -36,11 +36,6 @@ class MyCommonSetup(aetest.CommonSetup):
     pass
 
 
-vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
-vpn_disconnect_command = '/opt/cisco/anyconnect/bin/vpn disconnect'
-vpn_connect_command = '/home/admin/pyats/vpn_connect.sh'
-
-
 def react_output_connect(output_lines: List) -> bool:
     connection_successful = True
 
@@ -83,20 +78,22 @@ def react_output_status(output_lines: List) -> bool:
 
 class VerifyAnyconnect(aetest.Testcase):
     """
-    VerifyLogging Testcase - connect to VPNFW with Anyconnect and
+    VerifyAnyconnect Testcase - connect to VPNFW with Anyconnect and
     check connection establishes successfully and isn't interrupted afterwards.
     """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.connection_successful = False
+        self.vpn_connect_command = '/home/admin/pyats/vpn_connect.sh'
+        self.vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
 
     @aetest.test
     def anyconnect_test(self):
 
         log.info(banner('Trying to establish Anyconnect to VPNFW. Please hold on...'))
 
-        output_lines = ac_run_command(vpn_connect_command)
+        output_lines = ac_run_command(self.vpn_connect_command)
         self.connection_successful = react_output_connect(output_lines)
         if self.connection_successful:
             log.info(banner('VPN connection has been established successfully'))
@@ -112,7 +109,7 @@ class VerifyAnyconnect(aetest.Testcase):
         log.info(banner('Going standby for 45 seconds to check Anyconnect state afterwards'))
         time.sleep(45)
 
-        output_lines = ac_run_command(vpn_status_command)
+        output_lines = ac_run_command(self.vpn_status_command)
         connection_status = react_output_status(output_lines)
 
         if connection_status:

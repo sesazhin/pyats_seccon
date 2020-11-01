@@ -72,8 +72,7 @@ parameters = {
 
 class VerifyPacketTracer(aetest.Testcase):
     """
-    VerifyLogging Testcase - connect to VPNFW with Anyconnect and
-    check connection establishes successfully and isn't interrupted afterwards.
+    VerifyPacketTracer Testcase - connect to VPNFW and check whether simulated connection flows fine via firewall
     """
 
     def __init__(self, *args, **kwargs):
