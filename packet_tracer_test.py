@@ -79,7 +79,7 @@ class VerifyPacketTracer(aetest.Testcase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        self.command = f'packet-tracer input {self.parent.parameters["interface"]} udp {self.parent.parameters["source_ip"]} 6500 {self.parent.parameters["destination_ip"]} 443 xml'
+        self.command = f'packet-tracer input {self.parent.parameters["interface"]} {self.parent.parameters["protocol"]} {self.parent.parameters["source_ip"]} 6500 {self.parent.parameters["destination_ip"]} 443 xml'
         log.info(banner(f'Running packet-tracer command: {self.command}'))
 
     def get_action_allow(self, rootxml) -> bool:
@@ -177,28 +177,6 @@ class VerifyPacketTracer(aetest.Testcase):
         except ValueError as e:
             self.failed(banner(e))
 
-    '''
-    @aetest.test
-    def packet_tracer_test2(self):
-        # devices = self.parent.parameters['dev']['EdgeFW']
-        edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
-        log.debug(edgefw)
-        packet_tracer_output = edgefw.execute(self.command2, log_stdout=True)
-        log.debug(packet_tracer_output)
-
-        try:
-            packet_tracer_output = f'<packet-tracer>\n{packet_tracer_output}\n</packet-tracer>'
-            root = xml.etree.ElementTree.fromstring(packet_tracer_output)
-            if not self.get_action_allow(root):
-                drop_details = self.get_drop_phase(root)
-                self.failed(self.get_drop_details(drop_details))
-
-            else:
-                log.info(banner('Connection has been allowed.'))
-
-        except ValueError as e:
-            self.failed(e)
-    '''
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -207,6 +185,7 @@ if __name__ == '__main__':
     parser.add_argument('--iface', dest='interface')
     parser.add_argument('--sip', dest='source_ip')
     parser.add_argument('--dip', dest='destination_ip')
+    parser.add_argument('--proto', dest='protocol')
 
     args = parser.parse_known_args()[0]
 
