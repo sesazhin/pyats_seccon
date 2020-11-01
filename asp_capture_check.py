@@ -57,12 +57,10 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
     def get_asp_drop_reason(self, show_capture_output: str) -> str:
         capture_output_list = show_capture_output.splitlines()
         asp_drop_reason = ''
-        log.debug(banner(capture_output_list))
 
         for line in capture_output_list:
             log.debug(banner(f'line = {line}'))
             match_asp_drop = re.match(r'.*(Drop-reason: )\((.*)\) (.*)', line)
-            log.debug(banner(match_asp_drop))
 
             if match_asp_drop:
                 drop_code = match_asp_drop.group(2)
@@ -90,12 +88,11 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
         log.info(banner(f'Running command: {self.command}'))
 
         show_capture_output = self.edgefw.execute(self.command, log_stdout=True)
-        log.info(show_capture_output)
-
+        log.debug(show_capture_output)
+        
         asp_drop_reason = self.get_asp_drop_reason(show_capture_output)
         log.info(banner(asp_drop_reason))
 
-    '''
     @aetest.cleanup
     def disable_capture(self):
         self.command = f'no capture asp-tcp-o'
@@ -103,7 +100,7 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
 
         command_output = self.edgefw.execute(self.command, log_stdout=True)
         log.info(command_output)
-    '''
+
 
 class MyCommonCleanup(anyconnect_test.MyCommonCleanup):
     """
