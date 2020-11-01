@@ -155,7 +155,7 @@ class VerifyPacketTracer(aetest.Testcase):
         edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
         log.debug(edgefw)
         packet_tracer_output = edgefw.execute(self.command, log_stdout=True)
-        log.info(packet_tracer_output)
+        log.debug(packet_tracer_output)
 
         try:
             packet_tracer_output = f'<packet-tracer>\n{packet_tracer_output}\n</packet-tracer>'
