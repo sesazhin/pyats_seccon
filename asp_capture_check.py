@@ -28,64 +28,32 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
 import anyconnect_test
+import packet_tracer_test
 
-class MyCommonSetup(aetest.CommonSetup):
+
+class MyCommonSetup(packet_tracer_test.MyCommonSetup):
     """
     CommonSetup class to prepare for testcases
     Establishes connections to all devices in testbed
     """
     pass
 
-'''
-vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
-vpn_disconnect_command = '/opt/cisco/anyconnect/bin/vpn disconnect'
-vpn_connect_command = '/home/admin/pyats/vpn_connect.sh'
-
-
-def react_output_connect(output_lines: List) -> bool:
-    connection_successful = True
-
-    for line in output_lines:
-        if line:
-            if re.search('error:', line):
-                log.error(banner(f'Error has occured: {line}'))
-                connection_successful = False
-
-    return connection_successful
-
-
-def ac_run_command(command: str) -> List:
-    log.debug(f'running command: {command}')
-
-    command = shlex.split(command)
-
-    pipe = subprocess.Popen(command, stdout=subprocess.PIPE)
-    stdout = pipe.communicate()[0]
-    log.debug(f"stdout: {stdout.decode('utf-8')}")
-
-    output_lines = re.split('\\n|\\r+|  >> |VPN> ', stdout.decode('utf-8'))
-
-    log.debug(f"output_lines: {output_lines}")
-
-    return output_lines
-
-
-def react_output_status(output_lines: List) -> bool:
-    connection_successful = True
-
-    for line in output_lines:
-        if line:
-            if re.search('state: Disconnected', line):
-                log.debug(f'Anyconnect is disconnected: {line}')
-                connection_successful = False
-
-    return connection_successful
-'''
 
 class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
     """
     VerifyASPCapture Testcase - connect to VPNFW and check VPN connection is not dropped by firewall
     """
+
+    @aetest.setup
+    def enable_capture(self):
+        self.command = f'capture asp-tcp-o type asp-drop match tcp host 198.18.31.192 eq 443 host 10.207.195.220'
+        log.info(banner(f'Running command: {self.command}'))
+
+        edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
+        log.info(edgefw)
+        packet_tracer_output = edgefw.execute(self.command, log_stdout=True)
+        log.info(packet_tracer_output)
+
 
 class MyCommonCleanup(anyconnect_test.MyCommonCleanup):
     """

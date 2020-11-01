@@ -157,7 +157,6 @@ class VerifyPacketTracer(aetest.Testcase):
 
     @aetest.test
     def packet_tracer_test(self):
-        # devices = self.parent.parameters['dev']['EdgeFW']
         edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
         log.debug(edgefw)
         packet_tracer_output = edgefw.execute(self.command, log_stdout=True)
