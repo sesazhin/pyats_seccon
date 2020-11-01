@@ -70,6 +70,7 @@ class VerifyPacketTracer(aetest.Testcase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.command = 'packet-tracer input inet udp 10.207.195.220 6500 198.18.31.192 443 xml'
+        self.command2 = 'packet-tracer input inet udp 10.207.195.220 6500 10.207.195.231 443 xml'
 
     def get_action_allow(self, rootxml) -> bool:
         result_action = rootxml.find('./result/action')
@@ -155,6 +156,27 @@ class VerifyPacketTracer(aetest.Testcase):
         edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
         log.debug(edgefw)
         packet_tracer_output = edgefw.execute(self.command, log_stdout=True)
+        log.debug(packet_tracer_output)
+
+        try:
+            packet_tracer_output = f'<packet-tracer>\n{packet_tracer_output}\n</packet-tracer>'
+            root = xml.etree.ElementTree.fromstring(packet_tracer_output)
+            if not self.get_action_allow(root):
+                drop_details = self.get_drop_phase(root)
+                self.failed(self.get_drop_details(drop_details))
+
+            else:
+                log.info(banner('Connection has been allowed.'))
+
+        except ValueError as e:
+            self.failed(e)
+
+    @aetest.test
+    def packet_tracer_test2(self):
+        # devices = self.parent.parameters['dev']['EdgeFW']
+        edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
+        log.debug(edgefw)
+        packet_tracer_output = edgefw.execute(self.command2, log_stdout=True)
         log.debug(packet_tracer_output)
 
         try:
