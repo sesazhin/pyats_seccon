@@ -44,6 +44,14 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
     VerifyASPCapture Testcase - connect to VPNFW and check VPN connection is not dropped by firewall
     """
 
+    def get_asp_drop_reason(self, asp_drop_capture: str) -> str:
+        match_asp_drop = re.match(r'.*(Drop-reason: )\((.*)\) (.*)', asp_drop_capture)
+
+        drop_code = match_asp_drop.group(2)
+        drop_reason = match_asp_drop.group(3)
+
+        return f'Drop code: "{drop_code}". Drop reason: "{drop_reason}".'
+
     @aetest.setup
     def enable_capture(self):
         self.command = f'capture asp-tcp-o type asp-drop match tcp host 198.18.31.192 eq 443 host 10.207.195.220'
@@ -60,7 +68,11 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
 
         show_capture_output = self.edgefw.execute(self.command, log_stdout=True)
         log.info(show_capture_output)
-    
+
+        asp_drop_reason = self.get_asp_drop_reason(show_capture_output)
+
+        log.info(banner(asp_drop_reason))
+
     '''
     @aetest.cleanup
     def disable_capture(self):
