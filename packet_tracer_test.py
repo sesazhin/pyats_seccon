@@ -54,18 +54,19 @@ class MyCommonSetup(aetest.CommonSetup):
             try:
                 device.connect(log_stdout=False)
             except errors.ConnectionError:
-                self.failed(f"Failed to establish "
-                            f"connection to '{device.name}'")
+                self.failed(banner(f"Failed to establish "
+                            f"connection to '{device.name}'"))
             device_list.append(device)
         # Pass list of devices to testcases
         self.parent.parameters.update(dev=device_list)
 
-
+'''
 parameters = {
     'interface': 'inet',
     'source_ip': '10.207.195.220',
     'destination_ip': '198.18.31.192'
 }
+'''
 
 class VerifyPacketTracer(aetest.Testcase):
     """
@@ -75,14 +76,14 @@ class VerifyPacketTracer(aetest.Testcase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        self.command = f'packet-tracer input {parameters["interface"]} udp {parameters["source_ip"]} 6500 {parameters["destination_ip"]} 443 xml'
-        self.command2 = f'packet-tracer input inet udp 10.207.195.220 6500 10.207.195.231 443 xml'
+        
+        self.command = f'packet-tracer input {self.parent.parameters["interface"]} udp {self.parent.parameters["source_ip"]} 6500 {self.parent.parameters["destination_ip"]} 443 xml'
+        log.info(banner(f'Running packet-tracer command: {self.command}'))
 
     def get_action_allow(self, rootxml) -> bool:
         result_action = rootxml.find('./result/action')
 
-        if result_action is not None:
+        if result_action.text is not None:
             if result_action.text.lower() == 'allow':
                 return True
             else:
@@ -100,28 +101,28 @@ class VerifyPacketTracer(aetest.Testcase):
             log.debug(phase.tag)
 
             phase_result = phase.find('./result')
-            if phase_result is not None:
+            if phase_result.text is not None:
                 log.debug(phase_result.text)
                 if phase_result.text.lower() == 'drop':
 
                     phase_id = phase.find('./id')
-                    if phase_id is not None:
+                    if phase_id.text is not None:
                         phase_id_text = phase_id.text.replace('\n', '')
 
                     phase_type = phase.find('./type')
-                    if phase_type is not None:
+                    if phase_type.text is not None:
                         phase_type_text = phase_type.text.replace('\n', '')
 
                     phase_subtype = phase.find('./subtype')
-                    if phase_subtype is not None:
+                    if phase_subtype.text is not None:
                         phase_subtype_text = phase_subtype.text.replace('\n', '')
 
                     phase_config = phase.find('./config')
-                    if phase_config is not None:
+                    if phase_config.text is not None:
                         phase_config_text = phase_config.text.replace('\n', '')
 
                     phase_extra = phase.find('./extra')
-                    if phase_extra is not None:
+                    if phase_extra.text is not None:
                         phase_extra_text = phase_extra.text.replace('\n', '')
 
                     break
@@ -153,10 +154,6 @@ class VerifyPacketTracer(aetest.Testcase):
 
         return print_drop_details
 
-    @aetest.setup
-    def setup(self):
-        pass
-
     @aetest.test
     def packet_tracer_test(self):
         # devices = self.parent.parameters['dev']['EdgeFW']
@@ -170,14 +167,15 @@ class VerifyPacketTracer(aetest.Testcase):
             root = xml.etree.ElementTree.fromstring(packet_tracer_output)
             if not self.get_action_allow(root):
                 drop_details = self.get_drop_phase(root)
-                self.failed(self.get_drop_details(drop_details))
+                self.failed(banner(self.get_drop_details(drop_details)))
 
             else:
                 log.info(banner('Connection has been allowed.'))
 
         except ValueError as e:
-            self.failed(e)
+            self.failed(banner(e))
 
+    '''
     @aetest.test
     def packet_tracer_test2(self):
         # devices = self.parent.parameters['dev']['EdgeFW']
@@ -198,14 +196,17 @@ class VerifyPacketTracer(aetest.Testcase):
 
         except ValueError as e:
             self.failed(e)
-
+    '''
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--testbed', dest='testbed',
                         type=loader.load)
+    parser.add_argument('--iface', dest='interface')
+    parser.add_argument('--sip', dest='source_ip')
+    parser.add_argument('--dip', dest='destination_ip')
 
-    args, unknown = parser.parse_known_args()
+    args = parser.parse_known_args()[0]
 
     aetest.main(**vars(args))
 
