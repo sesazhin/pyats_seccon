@@ -106,7 +106,7 @@ class VerifyGoldenRoutes(aetest.Testcase):
         device_to_connect = self.parent.parameters['dev']
         log.info(device_to_connect)
 
-        output = edgefw.parse(self.command)
+        output = device_to_connect.parse(self.command)
         try:
             rib = output['vrf']['default']['address_family']['ipv4']['routes']
         except KeyError:
@@ -121,9 +121,9 @@ class VerifyGoldenRoutes(aetest.Testcase):
 
                 if golden_routes[route]['next_hop'] == output_next_hop and golden_routes[route][
                     'outgoing_interface'] == output_outgoing_interface:
-                    log.info(banner('Routing information on '))
+                    log.info(banner(f'Routing information for {route} on "{device_to_connect.name}" is correct.'))
                 else:
-                    self.failed(banner('failed'))
+                    self.failed(banner('Routing information for {route} on "{device_to_connect.name}" has been changed.}'))
 
 
 if __name__ == '__main__':
