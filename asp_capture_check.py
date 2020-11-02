@@ -38,7 +38,6 @@ class MyCommonSetup(packet_tracer_test.MyCommonSetup):
     """
     pass
 
-
 class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
     """
     VerifyASPCapture Testcase - connect to VPNFW and check VPN connection is not dropped by firewall
@@ -81,6 +80,11 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
         self.edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
         command_output = self.edgefw.execute(self.command, log_stdout=True)
         log.info(command_output)
+
+    @aetest.test
+    def check_asp_has_to_run(self):
+        if self.connection_successful:
+            aetest.skip.affix(section=VerifyASPCapture.get_capture_output, reason="Skipping 'get_capture_output' test since VPN connection has been established")
 
     @aetest.test
     def get_capture_output(self):
