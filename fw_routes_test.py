@@ -38,31 +38,51 @@ class MyCommonSetup(aetest.CommonSetup):
     """
 
     @aetest.subsection
-    def establish_connections(self, testbed):
+    def establish_connections(self, testbed, device_name):
         """
-        Establishes connections to all devices in testbed
+        Establishes connection to the required device
         :param testbed:
         :return:
         """
+        device_to_connect = None
 
         genie_testbed = Genie.init(testbed)
         self.parent.parameters['testbed'] = genie_testbed
-        device_list = []
-        for device in genie_testbed.devices.values():
-            log.info(banner(
-                f"Connect to device '{device.name}'"))
-            try:
-                device.connect(log_stdout=False)
-            except errors.ConnectionError:
-                self.failed(banner(f"Failed to establish "
-                                   f"connection to '{device.name}'"))
-            device_list.append(device)
-        # Pass list of devices to testcases
-        self.parent.parameters.update(dev=device_list)
 
+        try:
+            device_to_connect = self.parent.parameters['testbed'].devices[device_name]
+        except KeyError:
+            self.failed(banner(
+                f'Unable to find specified device: {device_name} in the topology. Using default device instead.'))
+
+
+        '''
+        devices = genie_testbed.devices.values()
+        
+        for device in devices:
+            if device.name == device_name:
+                device_to_connect = device
+                self.parent.parameters['device'] = device
+        
+        if not device_to_connect:
+            self.failed(banner(f'Unable to find specified device: {device_name} in the topology. Using default device instead.'))
+        '''
+
+        try:
+            device_to_connect.connect(log_stdout=False)
+        except errors.ConnectionError:
+            self.failed(banner(f"Failed to establish "
+                               f"connection to '{device_to_connect.name}'"))
+
+        '''
+        if device not in genie_testbed.devices.values():
+            log.error(f'Unable to find specified device: {device} in the topology. Using default device instead.')
+            self.parent.parameters['device'] = 'EdgeFW'
+        else:
+            self.parent.parameters['device'] = device
+        '''
 
 golden_routes = {'198.18.31.0/24': {'next_hop': '198.18.33.194', 'outgoing_interface': 'vpn'}}
-# golden_routes = {'8.18.31.0/24': {'next_hop': '198.18.33.194', 'outgoing_interface': 'vpn'}}
 
 class VerifyGoldenRoutes(aetest.Testcase):
     """
@@ -77,12 +97,15 @@ class VerifyGoldenRoutes(aetest.Testcase):
 
     @aetest.test
     def check_routes(self):
-
+        rib = {}
         edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
         log.info(edgefw)
 
         output = edgefw.parse(self.command)
-        rib = output['vrf']['default']['address_family']['ipv4']['routes']
+        try:
+            rib = output['vrf']['default']['address_family']['ipv4']['routes']
+        except KeyError:
+            self.failed(banner('Unable to get routes from output. Please check it conforms to the required format.'))
 
         for route in golden_routes.keys():
             if route not in rib:
@@ -93,7 +116,7 @@ class VerifyGoldenRoutes(aetest.Testcase):
 
                 if golden_routes[route]['next_hop'] == output_next_hop and golden_routes[route][
                     'outgoing_interface'] == output_outgoing_interface:
-                    log.info(banner('all good'))
+                    log.info(banner('Routing information on '))
                 else:
                     self.failed(banner('failed'))
 
@@ -101,6 +124,8 @@ class VerifyGoldenRoutes(aetest.Testcase):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--testbed', dest='testbed',
+                        type=loader.load)
+    parser.add_argument('--device', dest='device_name',
                         type=loader.load)
 
     args = parser.parse_known_args()[0]
