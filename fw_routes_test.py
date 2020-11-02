@@ -52,6 +52,7 @@ class MyCommonSetup(aetest.CommonSetup):
         try:
             log.info(f'device_name = {device_name}')
             device_to_connect = self.parent.parameters['testbed'].devices[device_name]
+            self.parent.parameters['dev'] = device_to_connect
         except KeyError:
             self.failed(banner(
                 f'Unable to find specified device: {device_name} in the topology.'))
@@ -69,6 +70,7 @@ class MyCommonSetup(aetest.CommonSetup):
             self.failed(banner(f'Unable to find specified device: {device_name} in the topology. Using default device instead.'))
         '''
 
+        log.info(banner(f'Connect to device "{device_name}"'))
         try:
             device_to_connect.connect(log_stdout=False)
         except errors.ConnectionError:
@@ -99,8 +101,10 @@ class VerifyGoldenRoutes(aetest.Testcase):
     @aetest.test
     def check_routes(self):
         rib = {}
-        edgefw = self.parent.parameters['testbed'].devices['EdgeFW']
-        log.info(edgefw)
+        # edgefw = self.parent.parameters['testbed'].devices[device_name']
+
+        device_to_connect = self.parent.parameters['dev']
+        log.info(device_to_connect)
 
         output = edgefw.parse(self.command)
         try:
