@@ -63,12 +63,14 @@ class MyCommonSetup(aetest.CommonSetup):
                 device_to_connect.connect(log_stdout=False)
             except errors.ConnectionError:
                 self.failed(banner(f"Failed to establish "
-			           f"connection to '{device_to_connect.name}'"))
+                                   f"connection to '{device_to_connect.name}'"))
         else:
             log.error(f'This test is only supported for ASA. But device specified has OS: {device_to_connect.os}')
             aetest.skip.affix(section=VerifyGoldenRoutes.check_routes, reason="Skipping 'get_capture_output' test")
 
+
 golden_routes = {'198.18.31.0/24': {'next_hop': '198.18.33.194', 'outgoing_interface': 'vpn'}}
+
 
 class VerifyGoldenRoutes(aetest.Testcase):
     """
@@ -85,6 +87,7 @@ class VerifyGoldenRoutes(aetest.Testcase):
     def check_routes(self) -> None:
         rib = {}
         device_to_connect = self.parent.parameters['dev']
+        output_next_hop = ''
         log.debug(device_to_connect)
 
         output = device_to_connect.parse(self.command)

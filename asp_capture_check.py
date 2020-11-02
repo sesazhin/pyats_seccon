@@ -38,20 +38,11 @@ class MyCommonSetup(packet_tracer_test.MyCommonSetup):
     """
     pass
 
+
 class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
     """
     VerifyASPCapture Testcase - connect to VPNFW and check VPN connection is not dropped by firewall
     """
-
-    '''
-    def get_asp_drop_reason(self, asp_drop_capture: str) -> str:
-        match_asp_drop = re.match(r'.*(Drop-reason: )\((.*)\) (.*)', asp_drop_capture)
-
-        drop_code = match_asp_drop.group(2)
-        drop_reason = match_asp_drop.group(3)
-
-        return f'Drop code: "{drop_code}". Drop reason: "{drop_reason}".'
-    '''
 
     def get_asp_drop_reason(self, show_capture_output: str) -> str:
         capture_output_list = show_capture_output.splitlines()
@@ -84,7 +75,8 @@ class VerifyASPCapture(anyconnect_test.VerifyAnyconnect):
     @aetest.test
     def check_asp_has_to_run(self):
         if self.connection_successful:
-            aetest.skip.affix(section=VerifyASPCapture.get_capture_output, reason="Skipping 'get_capture_output' test since VPN connection has been established")
+            aetest.skip.affix(section=VerifyASPCapture.get_capture_output,
+                              reason="Skipping 'get_capture_output' test since VPN connection has been established")
 
     @aetest.test
     def get_capture_output(self):
