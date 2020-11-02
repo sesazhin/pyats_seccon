@@ -57,19 +57,6 @@ class MyCommonSetup(aetest.CommonSetup):
             self.failed(banner(
                 f'Unable to find specified device: {device_name} in the topology.'))
 
-
-        '''
-        devices = genie_testbed.devices.values()
-        
-        for device in devices:
-            if device.name == device_name:
-                device_to_connect = device
-                self.parent.parameters['device'] = device
-        
-        if not device_to_connect:
-            self.failed(banner(f'Unable to find specified device: {device_name} in the topology. Using default device instead.'))
-        '''
-
         log.info(banner(f'Connect to device "{device_name}"'))
         try:
             device_to_connect.connect(log_stdout=False)
@@ -77,32 +64,23 @@ class MyCommonSetup(aetest.CommonSetup):
             self.failed(banner(f"Failed to establish "
                                f"connection to '{device_to_connect.name}'"))
 
-        '''
-        if device not in genie_testbed.devices.values():
-            log.error(f'Unable to find specified device: {device} in the topology. Using default device instead.')
-            self.parent.parameters['device'] = 'EdgeFW'
-        else:
-            self.parent.parameters['device'] = device
-        '''
 
 golden_routes = {'198.18.31.0/24': {'next_hop': '198.18.33.194', 'outgoing_interface': 'vpn'}}
 
 class VerifyGoldenRoutes(aetest.Testcase):
     """
-    VerifyPacketTracer Testcase - connect to VPNFW and check whether simulated connection flows fine via firewall
+    VerifyGoldenRoutes Testcase - connect to ASA/FTD and check
+    whether routing information for golden routes has been changed
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
+    @aetest.setup
+    def prepare_for_check_routes(self) -> None:
         self.command = f'show route'
         log.info(banner(f'Running command: {self.command}'))
 
     @aetest.test
-    def check_routes(self):
+    def check_routes(self) -> None:
         rib = {}
-        # edgefw = self.parent.parameters['testbed'].devices[device_name']
-
         device_to_connect = self.parent.parameters['dev']
         log.info(device_to_connect)
 
