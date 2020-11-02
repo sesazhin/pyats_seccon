@@ -50,10 +50,11 @@ class MyCommonSetup(aetest.CommonSetup):
         self.parent.parameters['testbed'] = genie_testbed
 
         try:
+            log.info(f'device_name = {device_name}')
             device_to_connect = self.parent.parameters['testbed'].devices[device_name]
         except KeyError:
             self.failed(banner(
-                f'Unable to find specified device: {device_name} in the topology. Using default device instead.'))
+                f'Unable to find specified device: {device_name} in the topology.'))
 
 
         '''
@@ -125,8 +126,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--testbed', dest='testbed',
                         type=loader.load)
-    parser.add_argument('--device', dest='device_name',
-                        type=loader.load)
+    parser.add_argument('--device', dest='device_name')
 
     args = parser.parse_known_args()[0]
 
