@@ -83,7 +83,7 @@ class VerifyFWBasics(aetest.Testcase):
 
     def check_asp_drop_output(self, run_command):
         expected_drop_reasons = ['sp-security-failed', 'rpf-violated', 'acl-drop', 'tcp-not-syn', 'tcp-3whs-failed',
-                                 'tcp-rstfin-ooo', 'l2_acl', 'tcp-not-syn', 'last_clearing']
+                                 'tcp-rstfin-ooo', 'l2_acl', 'tcp-not-syn', 'np-socket-closed', 'last_clearing']
 
         asp_drops = {}
         non_expected_asp_drops = {}
