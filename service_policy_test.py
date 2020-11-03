@@ -1,3 +1,33 @@
+#!/usr/bin/env python3
+
+# To get a logger for the script
+import logging
+
+import re
+import shlex
+import subprocess
+import time
+
+from pyats import aetest
+from pyats.log.utils import banner
+
+from typing import List
+from typing import Tuple
+
+# Genie Imports
+from genie.conf import Genie
+
+# To handle errors with connections to devices
+from unicon.core import errors
+
+import argparse
+from pyats.topology import loader
+
+# Get your logger for your script
+global log
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
+
 from fw_routes_test import MyCommonSetup
 
 class ServicePolicyCommonSetup(MyCommonSetup):
@@ -18,8 +48,8 @@ class VerifyServicePolicy(aetest.Testcase):
 
     @aetest.setup
     def prepare_for_check_service_policy(self) -> None:
-        self.command = f'show service-policy'
-        log.info(banner(f'Running command: {self.command}'))
+        self.command = [f'show vpn-sessiondb summary', f'show interface summary', f'show vpn-sessiondb summary']
+        # log.info(banner(f'Running command: {self.command}'))
 
     @aetest.test
     def check_service_policy_drops(self) -> None:
@@ -27,10 +57,11 @@ class VerifyServicePolicy(aetest.Testcase):
         device_to_connect = self.parent.parameters['dev']
         # output_next_hop = ''
         log.debug(device_to_connect)
-
-        output = device_to_connect.parse(self.command)
-
-        log.info(output)
+        
+        for run_command in self.command:
+            output = device_to_connect.parse(run_command)
+            log.info(f'command = {run_command}')
+            log.info(output)
 
         '''
         try:
