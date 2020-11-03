@@ -89,7 +89,7 @@ class VerifyGoldenRoutes(aetest.Testcase):
                 try:
                     output_next_hop = self.rib[route]['next_hop']['next_hop_list'][1]['next_hop']
                 except KeyError:
-                    self.failed(banner(f"Route {route} doesn't exist in routing table of {device_to_connect.name}"))
+                    self.failed(banner(f"Route {route} doesn't exist in routing table of {self.device_to_connect.name}"))
 
                 output_outgoing_interface = self.rib[route]['next_hop']['next_hop_list'][1]['outgoing_interface_name']
 
@@ -97,10 +97,10 @@ class VerifyGoldenRoutes(aetest.Testcase):
                 expected_outgoing_interface = golden_routes[route]['outgoing_interface']
 
                 if expected_next_hop == output_next_hop and expected_outgoing_interface == output_outgoing_interface:
-                    log.info(banner(f'Routing information for {route} on "{device_to_connect.name}" is correct.'))
+                    log.info(banner(f'Routing information for {route} on "{self.device_to_connect.name}" is correct.'))
                 else:
                     self.failed(banner(f'Routing information for {route} '
-                                       f'on "{device_to_connect.name}" has been changed.\n'
+                                       f'on "{self.device_to_connect.name}" has been changed.\n'
                                        f'Expected next_hop: {expected_next_hop}. '
                                        f'Got next_hop: {output_next_hop}.\n'
                                        f'Expected outgoing_interface: "{expected_outgoing_interface}". '
@@ -120,7 +120,7 @@ class VerifyGoldenRoutes(aetest.Testcase):
     @aetest.test
     def check_routes(self) -> None:
         try:
-            self.rib = output['vrf']['default']['address_family']['ipv4']['routes']
+            self.rib = self.output['vrf']['default']['address_family']['ipv4']['routes']
         except KeyError:
             self.failed(banner('Unable to get routes from output. Please check it conforms to the required format.'))
 
