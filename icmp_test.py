@@ -35,9 +35,6 @@ class MyCommonSetup(aetest.CommonSetup):
     """
     pass
 
-# icmp_test should only work only after VPN is established and during sleep test ...
-
-
 class VerifyConnectivity(aetest.Testcase):
     """
     VerifyConnectivity Testcase - check stable connectivity via ICMP to the remote host
@@ -51,7 +48,7 @@ class VerifyConnectivity(aetest.Testcase):
         stdout = pipe.communicate()[0]
         log.debug(f"stdout: {stdout.decode('utf-8')}")
 
-        log.info(stdout.decode('utf-8'))
+        log.debug(banner(stdout.decode('utf-8')))
 
         return stdout.decode('utf-8')
 
@@ -66,7 +63,7 @@ class VerifyConnectivity(aetest.Testcase):
                 drop_rate = match_drop_rate.group('rate')
 
                 if int(drop_rate) < 20:
-                    self.passed(f'Ping loss rate {drop_rate}%')
+                    self.passed(banner(f'Ping loss rate {drop_rate}%'))
                 else:
                     self.failed(f'Ping loss rate {drop_rate}%')
             else:
@@ -81,11 +78,8 @@ class VerifyConnectivity(aetest.Testcase):
         log.info(banner(f'Running command: {self.command}'))
 
     @aetest.test
-    def icmp_test(self):
-        log.info(banner('Trying to establish Anyconnect to VPNFW. Please hold on...'))
-
-        ping_output = ping_run_command(self.command)
-        
+    def icmp_test(self) -> None:
+        ping_output = self.ping_run_command()
         self.get_ping_drop_rate(ping_output)
 
 

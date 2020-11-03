@@ -27,13 +27,21 @@ global log
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
+from icmp_test import VerifyConnectivity
 
 class MyCommonSetup(aetest.CommonSetup):
     """
     CommonSetup class to prepare for testcases
     Establishes connections to all devices in testbed
     """
-    pass
+    @aetest.subsection
+    def prepare_test(self):
+        if not self.parent.parameters.get('remote_host'):
+            default_host = '172.16.53.120'
+            self.parent.parameters.update(remote_host=default_host)
+            log.debug(banner(f'host is not specified, using default: {default_host}'))
+        else:
+            log.debug(f'host is specified, using provided: {self.parent.parameters.get("remote_host")}')
 
 
 def react_output_connect(output_lines: List) -> bool:
@@ -100,6 +108,10 @@ class VerifyAnyconnect(aetest.Testcase):
         else:
             aetest.skip.affix(section=VerifyAnyconnect.anyconnect_stable_test,
                               reason="Skipping 'anyconnect_stable_test' since VPN connection hasn't been established")
+            aetest.skip.affix(section=VerifyConnectivity.prepare_for_ping,
+                              reason="Skipping 'prepare_for_ping' since VPN connection hasn't been established")
+            aetest.skip.affix(section=VerifyConnectivity.icmp_test,
+                              reason="Skipping 'icmp_test' since VPN connection hasn't been established")
 
             self.failed('Unable to establish VPN connection')
 
@@ -116,6 +128,10 @@ class VerifyAnyconnect(aetest.Testcase):
             log.info(banner('VPN connection is stable'))
         else:
             self.failed('VPN connection has been established but then failed')
+
+
+class AnyconnectVerifyConnectivity(VerifyConnectivity):
+    pass
 
 
 class MyCommonCleanup(aetest.CommonCleanup):
@@ -149,6 +165,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--testbed', dest='testbed',
                         type=loader.load)
+    parser.add_argument('--host', dest='remote_host')
 
     args, unknown = parser.parse_known_args()
 

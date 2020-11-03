@@ -10,5 +10,5 @@ def main(runtime):
     anyconnect_tests = os.path.join('anyconnect_test.py')
 
     # Execute the testscript
-    run(testscript = anyconnect_tests, testbed = 'testbed.yaml')
+    run(testscript = anyconnect_tests, testbed = 'testbed.yaml', remote_host = '8.8.8.8')
 
