@@ -63,7 +63,31 @@ class VerifyFWBasics(aetest.Testcase):
                 self.passed('Number of Anyconnect sessions on the device is far below the device limit.')
 
     def check_interface_summary_output(self, run_command):
-        pass
+        interfaces = {}
+        try:
+            interfaces = self.output[run_command]['interfaces']
+        except KeyError:
+            self.failed(
+                banner('Unable to parse "show interface summary" output. '
+                       'Please check it conforms to the required format.'))
+
+            for interface in interfaces:
+                try:
+                    if bool(interfaces['config_status']):
+                        interface_state = bool(interfaces[interface]['interface_state'])
+                        interface_link_status = bool(interfaces[interface]['link_status'])
+                        interface_line_protocol = bool(interfaces[interface]['line_protocol'])
+                        if not (interface_state and interface_link_status and interface_line_protocol):
+                            self.failed(banner(f'Interface {interface} state is not up.'))
+                    else:
+                         log.info(f'Ignore interface {interface} since it in admin down state')
+                except KeyError:
+                    self.failed(
+                        banner(f'Unable to parse details of {interface} in "show interface summary" output. '
+                               'Please check it conforms to the required format.'))
+
+            self.passed(banner(f'All non-admin down interfaces on '
+                               f'{self.parent.parameters["device_name"]} are in up state'))
 
     def check_asp_drop_output(self, run_command):
         pass
