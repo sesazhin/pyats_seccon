@@ -42,7 +42,7 @@ class ServicePolicyCommonSetup(MyCommonSetup):
 
 
 
-class VerifyServicePolicy(aetest.Testcase):
+class VerifyFWBasics(aetest.Testcase):
     """
     VerifyServicePolicy Testcase - check no drops in service-policy
     """
