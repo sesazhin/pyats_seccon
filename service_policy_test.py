@@ -48,7 +48,6 @@ class VerifyFWBasics(aetest.Testcase):
     """
 
     def check_anyconnect_load_output(self, run_command):
-        print('check_anyconnect_load_output')
         anyconnect_load = '0.0'
         try:
             anyconnect_load = self.output[run_command]['summary']['VPN Session']['device_load']
@@ -57,13 +56,12 @@ class VerifyFWBasics(aetest.Testcase):
                 banner('Unable to get Anyconnect load from output. Please check it conforms to the required format.'))
 
         if float(anyconnect_load) > 70.0:
-            self.failed(f'Number of Anyconnect sessions on the device approaching the device limit. '
-                        f'Anyconnect load: {anyconnect_load}')
+            self.failed(banner(f'Number of Anyconnect sessions on the device approaching the device limit. '
+                        f'Anyconnect load: {anyconnect_load}'))
         else:
-            self.passed('Number of Anyconnect sessions on the device is far below the device limit.')
+            self.passed(banner('Number of Anyconnect sessions on the device is far below the device limit.'))
 
     def check_interface_summary_output(self, run_command):
-        print('check_interface_summary_output')
         interfaces = {}
         try:
             interfaces = self.output[run_command]['interfaces']
@@ -74,14 +72,11 @@ class VerifyFWBasics(aetest.Testcase):
 
         for interface in interfaces:
             try:
-                if bool(interfaces['config_status']):
-                    interface_state = bool(interfaces[interface]['interface_state'])
-                    interface_link_status = bool(interfaces[interface]['link_status'])
-                    interface_line_protocol = bool(interfaces[interface]['line_protocol'])
-                    if not (interface_state and interface_link_status and interface_line_protocol):
-                        self.failed(banner(f'Interface {interface} state is not up.'))
-                else:
-                     log.info(f'Ignore interface {interface} since it in admin down state')
+                interface_state = bool(interfaces[interface]['interface_state'])
+                interface_link_status = bool(interfaces[interface]['link_status'])
+                interface_line_protocol = bool(interfaces[interface]['line_protocol'])
+                if not (interface_state and interface_link_status and interface_line_protocol):
+                    self.failed(banner(f'Interface {interface} state is not up.'))
             except KeyError:
                 self.failed(
                     banner(f'Unable to parse details of {interface} in "show interface summary" output. '
