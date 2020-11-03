@@ -30,7 +30,7 @@ log.setLevel(logging.INFO)
 
 from all_devices_verify_log import ConnectToAllDevices
 
-class MyCommonCommonSetup(all_devices_verify_log.ConnectToAllDevices):
+class MyCommonCommonSetup(ConnectToAllDevices):
     """
     CommonSetup class to prepare for testcases
     Establishes connections to all devices in testbed
@@ -109,10 +109,12 @@ class VerifyFWBasics(aetest.Testcase):
             self.passed(banner(f'All asp drops on "{self.parent.parameters["device_name"]}" are expected'))
 
     @aetest.setup
-    def prepare_for_basic_checks(self) -> None:
+    def prepare_for_basic_checks(self, device_name) -> None:
         self.output = {}
         self.command = [f'show vpn-sessiondb summary', f'show interface summary', f'show asp drop']
-        self.device_to_connect = self.parent.parameters['dev']
+        print(self.parent.parameters)
+        # device_name = self.parent.parameters['device_name']
+        self.device_to_connect = self.parent.parameters['testbed'].devices[device_name]
         log.debug(self.device_to_connect)
 
         for run_command in self.command:
@@ -137,7 +139,7 @@ class VerifyFWBasics(aetest.Testcase):
         self.check_interface_summary_output(run_command)
 
     @aetest.test
-    def check_asp_drop(self) -> None:
+    def check_asp_drop(self, device) -> None:
         run_command = "show asp drop"
         self.check_asp_drop_output(run_command)
 
