@@ -35,6 +35,7 @@ class MyCommonSetup(aetest.CommonSetup):
     """
     pass
 
+
 class VerifyConnectivity(aetest.Testcase):
     """
     VerifyConnectivity Testcase - check stable connectivity via ICMP to the remote host

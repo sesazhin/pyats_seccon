@@ -67,6 +67,8 @@ class MyCommonSetup(aetest.CommonSetup):
         else:
             log.error(f'This test is only supported for ASA. But device specified has OS: {device_to_connect.os}')
             aetest.skip.affix(section=VerifyGoldenRoutes.check_routes, reason="Skipping 'get_capture_output' test")
+            aetest.skip.affix(section=VerifyServicePolicy.check_service_policy_drops,
+                              reason="Skipping 'check_service_policy_drops' test")
 
 
 golden_routes = {'198.18.31.0/24': {'next_hop': '198.18.33.194', 'outgoing_interface': 'vpn'}}
