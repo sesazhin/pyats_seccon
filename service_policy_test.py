@@ -48,6 +48,7 @@ class VerifyFWBasics(aetest.Testcase):
     """
 
     def check_anyconnect_load_output(self, run_command):
+        print('check_anyconnect_load_output')
         anyconnect_load = '0.0'
         try:
             anyconnect_load = self.output[run_command]['summary']['VPN Session']['device_load']
@@ -55,14 +56,15 @@ class VerifyFWBasics(aetest.Testcase):
             self.failed(
                 banner('Unable to get Anyconnect load from output. Please check it conforms to the required format.'))
 
-            if float(anyconnect_load) > 70.0:
-                self.failed(
-                    f'Number of Anyconnect sessions on the device approaching the device limit. '
-                    f'Anyconnect load: {anyconnect_load}')
-            else:
-                self.passed('Number of Anyconnect sessions on the device is far below the device limit.')
+        if float(anyconnect_load) > 70.0:
+	    self.failed(
+	    f'Number of Anyconnect sessions on the device approaching the device limit. '
+	    f'Anyconnect load: {anyconnect_load}')
+        else:
+	    self.passed('Number of Anyconnect sessions on the device is far below the device limit.')
 
     def check_interface_summary_output(self, run_command):
+        print('check_interface_summary_output')
         interfaces = {}
         try:
             interfaces = self.output[run_command]['interfaces']
