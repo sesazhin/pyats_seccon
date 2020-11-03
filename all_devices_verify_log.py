@@ -67,7 +67,7 @@ class VerifyLogging(aetest.Testcase):
         output = device.execute('show logging | i ERROR|WARN')
 
         if len(output) > 0:
-            self.failed('Found ERROR in log, review logs first')
+            self.failed(f'Found ERROR in log:\n{output}')
         else:
             pass
 
