@@ -57,7 +57,7 @@ class VerifyConnectivity(aetest.Testcase):
         match_drop_rate = None
 
         for line in ping_output_list:
-            match_drop_rate = re.match(r'.*(?P<rate>\d+)% packet loss.*', line)
+            match_drop_rate = re.match(r'.*\, (?P<rate>\d+)% packet loss.*', line)
 
             if match_drop_rate:
                 drop_rate = match_drop_rate.group('rate')
@@ -65,7 +65,7 @@ class VerifyConnectivity(aetest.Testcase):
                 if int(drop_rate) < 20:
                     self.passed(banner(f'Ping loss rate {drop_rate}%'))
                 else:
-                    self.failed(f'Ping loss rate {drop_rate}%')
+                    self.failed(banner(f'Ping loss rate {drop_rate}%'))
             else:
                 continue
 
@@ -74,7 +74,7 @@ class VerifyConnectivity(aetest.Testcase):
 
     @aetest.setup
     def prepare_for_ping(self, remote_host) -> None:
-        self.command = f'ping {remote_host} -c 10'
+        self.command = f'ping {remote_host} -c 10 -s 1400'
         log.info(banner(f'Running command: {self.command}'))
 
     @aetest.test
