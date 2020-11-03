@@ -41,58 +41,59 @@ class ServicePolicyCommonSetup(MyCommonSetup):
 # golden_routes = {'198.18.31.0/24': {'next_hop': '198.18.33.194', 'outgoing_interface': 'vpn'}}
 
 
+
 class VerifyServicePolicy(aetest.Testcase):
     """
     VerifyServicePolicy Testcase - check no drops in service-policy
     """
 
+    def check_anyconnect_load_output(self, run_command):
+        anyconnect_load = '0.0'
+        try:
+            anyconnect_load = self.output[run_command]['summary']['VPN Session']['device_load']
+        except KeyError:
+            self.failed(
+                banner('Unable to get Anyconnect load from output. Please check it conforms to the required format.'))
+
+            if float(anyconnect_load) > 70.0:
+                self.failed(
+                    f'Number of Anyconnect sessions on the device approaching the device limit. '
+                    f'Anyconnect load: {anyconnect_load}')
+            else:
+                self.passed('Number of Anyconnect sessions on the device is far below the device limit.')
+
+    def check_interface_summary_output(self, run_command):
+        pass
+
+    def check_asp_drop_output(self, run_command):
+        pass
+
     @aetest.setup
-    def prepare_for_check_service_policy(self) -> None:
-        self.command = [f'show vpn-sessiondb summary', f'show interface summary', f'show vpn-sessiondb summary']
-        # log.info(banner(f'Running command: {self.command}'))
+    def prepare_for_basic_checks(self) -> None:
+        self.command = [f'show vpn-sessiondb summary', f'show interface summary', f'show asp drop']
+        self.device_to_connect = self.parent.parameters['dev']
+        log.debug(self.device_to_connect)
+
+        for run_command in self.command:
+            self.output[run_command] = self.device_to_connect.parse(run_command)
+            log.info(f'command = {run_command}')
+
+        log.info(output)
 
     @aetest.test
-    def check_service_policy_drops(self) -> None:
-        # rib = {}
-        device_to_connect = self.parent.parameters['dev']
-        # output_next_hop = ''
-        log.debug(device_to_connect)
-        
-        for run_command in self.command:
-            output = device_to_connect.parse(run_command)
-            log.info(f'command = {run_command}')
-            log.info(output)
+    def check_anyconnect_load(self) -> None:
+        run_command = "show vpn-sessiondb summary"
+        check_anyconnect_load_output(self, run_command)
 
-        '''
-        try:
-            rib = output['vrf']['default']['address_family']['ipv4']['routes']
-        except KeyError:
-            self.failed(banner('Unable to get routes from output. Please check it conforms to the required format.'))
+    @aetest.test
+    def check_interface_summary(self) -> None:
+        run_command = "show interface summary"
+        check_interface_summary_output(self, run_command)
 
-        for route in golden_routes.keys():
-            if route not in rib:
-                self.failed(f'{route} is not found')
-            else:
-                try:
-                    output_next_hop = rib[route]['next_hop']['next_hop_list'][1]['next_hop']
-                except KeyError:
-                    self.failed(banner(f"Route {route} doesn't exist in routing table of {device_to_connect.name}"))
-
-                output_outgoing_interface = rib[route]['next_hop']['next_hop_list'][1]['outgoing_interface_name']
-
-                expected_next_hop = golden_routes[route]['next_hop']
-                expected_outgoing_interface = golden_routes[route]['outgoing_interface']
-
-                if expected_next_hop == output_next_hop and expected_outgoing_interface == output_outgoing_interface:
-                    log.info(banner(f'Routing information for {route} on "{device_to_connect.name}" is correct.'))
-                else:
-                    self.failed(
-                        banner(f'Routing information for {route} on "{device_to_connect.name}" has been changed.\n'
-                               f'Expected next_hop: {expected_next_hop}. '
-                               f'Got next_hop: {output_next_hop}.\n'
-                               f'Expected outgoing_interface: "{expected_outgoing_interface}". '
-                               f'Got outgoing_interface: "{output_outgoing_interface}".'))
-        '''
+    @aetest.test
+    def check_asp_drop(self) -> None:
+        run_command = "show asp drop"
+        ccheck_asp_drop_output(self, run_command)
 
 
 if __name__ == '__main__':
