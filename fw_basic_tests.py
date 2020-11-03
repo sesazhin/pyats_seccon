@@ -40,7 +40,7 @@ class ServicePolicyCommonSetup(MyCommonSetup):
 
 class VerifyFWBasics(aetest.Testcase):
     """
-    VerifyServicePolicy Testcase - check no drops in service-policy
+    VerifyServicePolicy Testcase - run basic checks on firewalls
     """
 
     def check_anyconnect_load_output(self, run_command):
@@ -82,7 +82,31 @@ class VerifyFWBasics(aetest.Testcase):
                            f'{self.parent.parameters["device_name"]} are in up state'))
 
     def check_asp_drop_output(self, run_command):
-        pass
+        expected_drop_reasons = ['sp-security-failed', 'rpf-violated', 'acl-drop', 'tcp-not-syn', 'tcp-3whs-failed',
+                                 'tcp-rstfin-ooo', 'l2_acl', 'tcp-not-syn', 'last_clearing']
+
+        asp_drops = {}
+        non_expected_asp_drops = {}
+        try:
+            asp_drops = self.output[run_command]['frame_drop']
+        except KeyError:
+            self.failed(
+                banner('Unable to parse "show asp drop" output. '
+                       'Please check it conforms to the required format.'))
+
+        for asp_drop_reason in asp_drops:
+            if asp_drop_reason not in expected_drop_reasons:
+                non_expected_asp_drops.update({asp_drop_reason: asp_drops[asp_drop_reason]})
+
+        if len(non_expected_asp_drops) > 0:
+            log.error(banner(f'The following non-expected asp drops has been found:'))
+            log.error(banner(f'Drop reason: Drop count'))
+            for asp_drop_reason in non_expected_asp_drops.keys():
+                log.error(banner(f'"{asp_drop_reason}": {non_expected_asp_drops[asp_drop_reason]}'))
+            self.failed(banner(f'Please double-check these asp drops on '
+                  f'"{self.parent.parameters["device_name"]}" are not critical and expected.'))
+        else:
+            self.passed(banner(f'All asp drops on "{self.parent.parameters["device_name"]}" are expected'))
 
     @aetest.setup
     def prepare_for_basic_checks(self) -> None:
