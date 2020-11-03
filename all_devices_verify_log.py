@@ -60,14 +60,23 @@ class VerifyLogging(aetest.Testcase):
     @aetest.setup
     def setup(self):
         devices = self.parent.parameters['dev']
-        aetest.loop.mark(self.error_logs, device=devices)
+        tests_names = [f'Checking errors in logs on "{device.name}"' for device in devices]
+        aetest.loop.mark(self.error_logs, device=devices, uids=tests_names)
 
     @aetest.test
     def error_logs(self, device):
-        output = device.execute('show logging | i ERROR|WARN')
+        if device.os == 'asa':
+            output = device.execute('show logging | i ASA-[1-3]')
+        else:
+            output = device.execute('show logging | i ERROR|WARN')
 
         if len(output) > 0:
-            self.failed(f'Found ERROR in log:\n{output}')
+            if len(output.splitlines()) <= 10:
+                self.failed(banner(f'Found ERROR in log:\n{output}'))
+            else:
+                for log_line in output.splitlines()[:9]:
+                    log.error(banner(f'Found ERROR in log: {log_line}'))
+                self.failed(banner(f'Output is too huge. Please check the rest of log on device'))
         else:
             pass
 
