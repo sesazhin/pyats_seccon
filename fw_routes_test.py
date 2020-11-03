@@ -109,15 +109,16 @@ class VerifyGoldenRoutes(aetest.Testcase):
     @aetest.setup
     def prepare_for_check_routes(self) -> None:
         self.command = f'show route'
+        self.device_to_connect = self.parent.parameters['dev']
         log.info(banner(f'Running command: {self.command}'))
+        log.debug(self.device_to_connect)
+
+        self.output = self.device_to_connect.parse(self.command)
+
+        log.debug(self.output)
 
     @aetest.test
     def check_routes(self) -> None:
-        device_to_connect = self.parent.parameters['dev']
-
-        log.debug(device_to_connect)
-
-        output = device_to_connect.parse(self.command)
         try:
             self.rib = output['vrf']['default']['address_family']['ipv4']['routes']
         except KeyError:
