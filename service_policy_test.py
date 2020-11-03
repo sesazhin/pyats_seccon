@@ -70,6 +70,7 @@ class VerifyFWBasics(aetest.Testcase):
 
     @aetest.setup
     def prepare_for_basic_checks(self) -> None:
+        self.output = {}
         self.command = [f'show vpn-sessiondb summary', f'show interface summary', f'show asp drop']
         self.device_to_connect = self.parent.parameters['dev']
         log.debug(self.device_to_connect)
@@ -78,22 +79,22 @@ class VerifyFWBasics(aetest.Testcase):
             self.output[run_command] = self.device_to_connect.parse(run_command)
             log.info(f'command = {run_command}')
 
-        log.info(output)
+        log.info(self.output)
 
     @aetest.test
     def check_anyconnect_load(self) -> None:
         run_command = "show vpn-sessiondb summary"
-        check_anyconnect_load_output(self, run_command)
+        self.check_anyconnect_load_output(run_command)
 
     @aetest.test
     def check_interface_summary(self) -> None:
         run_command = "show interface summary"
-        check_interface_summary_output(self, run_command)
+        self.check_interface_summary_output(run_command)
 
     @aetest.test
     def check_asp_drop(self) -> None:
         run_command = "show asp drop"
-        ccheck_asp_drop_output(self, run_command)
+        self.check_asp_drop_output(run_command)
 
 
 if __name__ == '__main__':
