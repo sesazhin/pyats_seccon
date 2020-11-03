@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 log.level = logging.INFO
 
 
-class MyCommonSetup(aetest.CommonSetup):
+class ConnectToAllDevices(aetest.CommonSetup):
     """
     CommonSetup class to prepare for testcases
     Establishes connections to all devices in testbed

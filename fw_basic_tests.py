@@ -28,9 +28,9 @@ global log
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
-from fw_routes_test import MyCommonSetup
+from all_devices_verify_log import ConnectToAllDevices
 
-class ServicePolicyCommonSetup(MyCommonSetup):
+class MyCommonCommonSetup(all_devices_verify_log.ConnectToAllDevices):
     """
     CommonSetup class to prepare for testcases
     Establishes connections to all devices in testbed
@@ -120,6 +120,11 @@ class VerifyFWBasics(aetest.Testcase):
             log.debug(f'command = {run_command}')
 
         log.debug(self.output)
+
+        devices = self.parent.parameters['dev']
+        firewalls = [device for device in devices if device.os == 'asa']
+        tests_names = [f'Checking "show asp drop" on "{firewall.name}"' for firewall in firewalls]
+        aetest.loop.mark(self.check_asp_drop, device=firewalls, uids=tests_names)
 
     @aetest.test
     def check_anyconnect_load(self) -> None:
