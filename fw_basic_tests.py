@@ -38,10 +38,6 @@ class ServicePolicyCommonSetup(MyCommonSetup):
     pass
 
 
-# golden_routes = {'198.18.31.0/24': {'next_hop': '198.18.33.194', 'outgoing_interface': 'vpn'}}
-
-
-
 class VerifyFWBasics(aetest.Testcase):
     """
     VerifyServicePolicy Testcase - check no drops in service-policy
@@ -97,9 +93,9 @@ class VerifyFWBasics(aetest.Testcase):
 
         for run_command in self.command:
             self.output[run_command] = self.device_to_connect.parse(run_command)
-            log.info(f'command = {run_command}')
+            log.debug(f'command = {run_command}')
 
-        log.info(self.output)
+        log.debug(self.output)
 
     @aetest.test
     def check_anyconnect_load(self) -> None:
