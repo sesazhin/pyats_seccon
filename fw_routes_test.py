@@ -80,19 +80,18 @@ class VerifyGoldenRoutes(aetest.Testcase):
     whether routing information for golden routes has been changed
     """
     def check_output_routes(self):
-        rib = {}
         output_next_hop = ''
 
         for route in golden_routes.keys():
-            if route not in rib:
+            if route not in self.rib:
                 self.failed(f'{route} is not found')
             else:
                 try:
-                    output_next_hop = rib[route]['next_hop']['next_hop_list'][1]['next_hop']
+                    output_next_hop = self.rib[route]['next_hop']['next_hop_list'][1]['next_hop']
                 except KeyError:
                     self.failed(banner(f"Route {route} doesn't exist in routing table of {device_to_connect.name}"))
 
-                output_outgoing_interface = rib[route]['next_hop']['next_hop_list'][1]['outgoing_interface_name']
+                output_outgoing_interface = self.rib[route]['next_hop']['next_hop_list'][1]['outgoing_interface_name']
 
                 expected_next_hop = golden_routes[route]['next_hop']
                 expected_outgoing_interface = golden_routes[route]['outgoing_interface']
@@ -120,7 +119,7 @@ class VerifyGoldenRoutes(aetest.Testcase):
 
         output = device_to_connect.parse(self.command)
         try:
-            rib = output['vrf']['default']['address_family']['ipv4']['routes']
+            self.rib = output['vrf']['default']['address_family']['ipv4']['routes']
         except KeyError:
             self.failed(banner('Unable to get routes from output. Please check it conforms to the required format.'))
 
