@@ -124,14 +124,12 @@ class VerifyFWBasics(aetest.Testcase):
     def prepare_for_basic_checks(self, device_name) -> None:
         self.output = {}
         self.command = [f'show vpn-sessiondb summary', f'show interface summary', f'show asp drop']
-        print(self.parent.parameters)
-        # device_name = self.parent.parameters['device_name']
         self.device_to_connect = self.parent.parameters['testbed'].devices[device_name]
         log.debug(self.device_to_connect)
 
         for run_command in self.command:
-            log.info(f'command = {run_command}')
-            log.info(self.device_to_connect)
+            log.debug(f'command = {run_command}')
+            log.debug(self.device_to_connect)
             try:
                 self.output[run_command] = self.device_to_connect.parse(run_command)
             except metaparser.util.exceptions.SchemaEmptyParserError:
