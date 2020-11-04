@@ -137,13 +137,6 @@ class VerifyFWBasics(aetest.Testcase):
                 self.output[run_command] = {}
         log.debug(self.output)
 
-        '''
-        devices = self.parent.parameters['dev']
-        firewalls = [device for device in devices if device.os == 'asa']
-        tests_names = [f'Checking "show asp drop" on "{firewall.name}"' for firewall in firewalls]
-        aetest.loop.mark(self.check_asp_drop, device=firewalls, uids=tests_names)
-        '''
-
     @aetest.test
     def check_anyconnect_load(self) -> None:
         run_command = "show vpn-sessiondb summary"
