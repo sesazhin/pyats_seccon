@@ -47,41 +47,47 @@ class VerifyFWBasics(aetest.Testcase):
 
     def check_anyconnect_load_output(self, run_command):
         anyconnect_load = '0.0'
-        try:
-            anyconnect_load = self.output[run_command]['summary']['VPN Session']['device_load']
-        except KeyError:
-            self.failed(
-                banner('Unable to get Anyconnect load from output. Please check it conforms to the required format.'))
+        if self.output[run_command]:
+            try:
+                anyconnect_load = self.output[run_command]['summary']['VPN Session']['device_load']
+            except KeyError:
+                self.failed(
+                    banner('Unable to get Anyconnect load from output. Please check it conforms to the required format.'))
 
-        if float(anyconnect_load) > 70.0:
-            self.failed(banner(f'Number of Anyconnect sessions on the device approaching the device limit. '
-                        f'Anyconnect load: {anyconnect_load}'))
+            if float(anyconnect_load) > 70.0:
+                self.failed(banner(f'Number of Anyconnect sessions on the device approaching the device limit. '
+                            f'Anyconnect load: {anyconnect_load}'))
+            else:
+                self.passed(banner('Number of Anyconnect sessions on the device is far below the device limit.'))
         else:
-            self.passed(banner('Number of Anyconnect sessions on the device is far below the device limit.'))
+            self.passed(banner('Output of "show vpn-sessiondb summary" is empty. Marking this test passed.'))
 
     def check_interface_summary_output(self, run_command):
         interfaces = {}
-        try:
-            interfaces = self.output[run_command]['interfaces']
-        except KeyError:
-            self.failed(
-                banner('Unable to parse "show interface summary" output. '
-                       'Please check it conforms to the required format.'))
-
-        for interface in interfaces:
+        if self.output[run_command]:
             try:
-                interface_state = bool(interfaces[interface]['interface_state'])
-                interface_link_status = bool(interfaces[interface]['link_status'])
-                interface_line_protocol = bool(interfaces[interface]['line_protocol'])
-                if not (interface_state and interface_link_status and interface_line_protocol):
-                    self.failed(banner(f'Interface {interface} state is not up.'))
+                interfaces = self.output[run_command]['interfaces']
             except KeyError:
                 self.failed(
-                    banner(f'Unable to parse details of {interface} in "show interface summary" output. '
+                    banner('Unable to parse "show interface summary" output. '
                            'Please check it conforms to the required format.'))
 
-        self.passed(banner(f'All non-admin down interfaces on '
-                           f'{self.parent.parameters["device_name"]} are in up state'))
+            for interface in interfaces:
+                try:
+                    interface_state = bool(interfaces[interface]['interface_state'])
+                    interface_link_status = bool(interfaces[interface]['link_status'])
+                    interface_line_protocol = bool(interfaces[interface]['line_protocol'])
+                    if not (interface_state and interface_link_status and interface_line_protocol):
+                        self.failed(banner(f'Interface {interface} state is not up.'))
+                except KeyError:
+                    self.failed(
+                        banner(f'Unable to parse details of {interface} in "show interface summary" output. '
+                               'Please check it conforms to the required format.'))
+
+            self.passed(banner(f'All non-admin down interfaces on '
+                               f'{self.parent.parameters["device_name"]} are in up state'))
+        else:
+            self.passed(banner('Output of "show interface summary" is empty. Marking this test passed.'))
 
     def check_asp_drop_output(self, run_command):
         expected_drop_reasons = ['sp-security-failed', 'rpf-violated', 'acl-drop', 'tcp-not-syn', 'tcp-3whs-failed',
@@ -89,26 +95,30 @@ class VerifyFWBasics(aetest.Testcase):
 
         asp_drops = {}
         non_expected_asp_drops = {}
-        try:
-            asp_drops = self.output[run_command]['frame_drop']
-        except KeyError:
-            self.failed(
-                banner('Unable to parse "show asp drop" output. '
-                       'Please check it conforms to the required format.'))
 
-        for asp_drop_reason in asp_drops:
-            if asp_drop_reason not in expected_drop_reasons:
-                non_expected_asp_drops.update({asp_drop_reason: asp_drops[asp_drop_reason]})
+        if self.output[run_command]:
+            try:
+                asp_drops = self.output[run_command]['frame_drop']
+            except KeyError:
+                self.failed(
+                    banner('Unable to parse "show asp drop" output. '
+                           'Please check it conforms to the required format.'))
 
-        if len(non_expected_asp_drops) > 0:
-            log.error(banner(f'The following non-expected asp drops has been found:'))
-            log.error(banner(f'Drop reason: Drop count'))
-            for asp_drop_reason in non_expected_asp_drops.keys():
-                log.error(banner(f'"{asp_drop_reason}": {non_expected_asp_drops[asp_drop_reason]}'))
-            self.failed(banner(f'Please double-check these asp drops on '
-                  f'"{self.parent.parameters["device_name"]}" are not critical and expected.'))
+            for asp_drop_reason in asp_drops:
+                if asp_drop_reason not in expected_drop_reasons:
+                    non_expected_asp_drops.update({asp_drop_reason: asp_drops[asp_drop_reason]})
+
+            if len(non_expected_asp_drops) > 0:
+                log.error(banner(f'The following non-expected asp drops has been found:'))
+                log.error(banner(f'Drop reason: Drop count'))
+                for asp_drop_reason in non_expected_asp_drops.keys():
+                    log.error(banner(f'"{asp_drop_reason}": {non_expected_asp_drops[asp_drop_reason]}'))
+                self.failed(banner(f'Please double-check these asp drops on '
+                      f'"{self.parent.parameters["device_name"]}" are not critical and expected.'))
+            else:
+                self.passed(banner(f'All asp drops on "{self.parent.parameters["device_name"]}" are expected'))
         else:
-            self.passed(banner(f'All asp drops on "{self.parent.parameters["device_name"]}" are expected'))
+            self.passed(banner('Output of "show asp drop" is empty. Marking this test passed.'))
 
     @aetest.setup
     def prepare_for_basic_checks(self, device_name) -> None:
