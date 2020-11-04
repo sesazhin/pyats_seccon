@@ -28,11 +28,10 @@ class common_setup(aetest.CommonSetup):
         # Load testbed file which is passed as command-line argument
         genie_testbed = Genie.init(testbed)
         # Load all devices from testbed file and try to connect to them
-        device = genie_testbed.devices.values()
-        log.info(device)
+        device = genie_testbed.devices['vpnfw']
         log.info(banner(f"Connect to device '{device.name}'"))
         try:
-            device[0].connect(log_stdout=False)
+            device.connect(log_stdout=False)
         except errors.ConnectionError:
             self.failed(f"Failed to establish "
                         f"connection to '{device.name}'")
