@@ -134,6 +134,39 @@ class AnyconnectVerifyConnectivity(VerifyConnectivity):
     pass
 
 
+vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
+
+
+@aetest.processors.noreport
+def skip_if_vpn():
+    output_lines = ac_run_command(self.vpn_status_command)
+    connection_status = react_output_status(output_lines)
+
+    return connection_status
+
+
+class VerifyAnyconnectStability(aetest.Testcase):
+    @aetest.processors.pre(skip_if_vpn)
+    @aetest.test
+    def anyconnect_stable_test(self):
+        vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
+
+        log.info(banner('Going standby for 30 seconds to check Anyconnect state afterwards'))
+        time.sleep(2)
+
+        output_lines = ac_run_command(vpn_status_command)
+        connection_status = react_output_status(output_lines)
+
+        if connection_status:
+            log.info(banner('VPN connection is stable'))
+        else:
+            self.failed('VPN connection has been established but then failed')
+
+
+@aetest.processors.noreport
+def skip_if_vpn_not_established():
+    log.info(f'self.parent.parameters[connection_status]: {self.parent.parameters[connection_status]}')
+
 class MyCommonCleanup(aetest.CommonCleanup):
     """
     CommonCleanup class to disconnect Anyconnect after the tests
