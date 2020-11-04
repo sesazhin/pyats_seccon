@@ -94,7 +94,6 @@ class VerifyAnyconnect(aetest.Testcase):
         super().__init__(*args, **kwargs)
         self.connection_successful = False
         self.vpn_connect_command = '/home/admin/pyats/vpn_connect.sh'
-        self.vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
 
     @aetest.test
     def anyconnect_test(self):
@@ -106,28 +105,12 @@ class VerifyAnyconnect(aetest.Testcase):
         if self.connection_successful:
             log.info(banner('VPN connection has been established successfully'))
         else:
-            aetest.skip.affix(section=VerifyAnyconnect.anyconnect_stable_test,
-                              reason="Skipping 'anyconnect_stable_test' since VPN connection hasn't been established")
             aetest.skip.affix(section=VerifyConnectivity.prepare_for_ping,
                               reason="Skipping 'prepare_for_ping' since VPN connection hasn't been established")
             aetest.skip.affix(section=VerifyConnectivity.icmp_test,
                               reason="Skipping 'icmp_test' since VPN connection hasn't been established")
 
             self.failed('Unable to establish VPN connection')
-
-    @aetest.test
-    def anyconnect_stable_test(self):
-
-        log.info(banner('Going standby for 45 seconds to check Anyconnect state afterwards'))
-        time.sleep(2)
-
-        output_lines = ac_run_command(self.vpn_status_command)
-        connection_status = react_output_status(output_lines)
-
-        if connection_status:
-            log.info(banner('VPN connection is stable'))
-        else:
-            self.failed('VPN connection has been established but then failed')
 
 
 class AnyconnectVerifyConnectivity(VerifyConnectivity):
@@ -139,7 +122,7 @@ vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
 
 @aetest.processors.noreport
 def skip_if_vpn():
-    output_lines = ac_run_command(self.vpn_status_command)
+    output_lines = ac_run_command(vpn_status_command)
     connection_status = react_output_status(output_lines)
 
     return connection_status
@@ -148,11 +131,9 @@ def skip_if_vpn():
 class VerifyAnyconnectStability(aetest.Testcase):
     @aetest.processors.pre(skip_if_vpn)
     @aetest.test
-    def anyconnect_stable_test(self):
-        vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
-
-        log.info(banner('Going standby for 30 seconds to check Anyconnect state afterwards'))
-        time.sleep(2)
+    def anyconnect_stable_test(self, wait_time):
+        log.info(banner(f'Going standby for {wait_time} seconds to check Anyconnect state afterwards'))
+        time.sleep(wait_time)
 
         output_lines = ac_run_command(vpn_status_command)
         connection_status = react_output_status(output_lines)
@@ -174,13 +155,12 @@ class MyCommonCleanup(aetest.CommonCleanup):
 
     @aetest.subsection
     def ac_disconnect(self):
-        vpn_status_command = '/opt/cisco/anyconnect/bin/vpn status'
-        vpn_disconnect_command = '/opt/cisco/anyconnect/bin/vpn disconnect'
+        self.vpn_disconnect_command = '/opt/cisco/anyconnect/bin/vpn disconnect'
         output_lines = ac_run_command(vpn_status_command)
         connection_status = react_output_status(output_lines)
 
         if connection_status:
-            output_lines = ac_run_command(vpn_disconnect_command)
+            output_lines = ac_run_command(self.vpn_disconnect_command)
             connection_status = react_output_status(output_lines)
 
             if connection_status:
@@ -199,8 +179,10 @@ if __name__ == '__main__':
     parser.add_argument('--testbed', dest='testbed',
                         type=loader.load)
     parser.add_argument('--host', dest='remote_host')
+    parser.add_argument('--wait_time', dest='wait_time')
 
     args, unknown = parser.parse_known_args()
 
     aetest.main(**vars(args))
+
 

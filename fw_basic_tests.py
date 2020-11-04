@@ -17,6 +17,8 @@ from typing import Tuple
 # Genie Imports
 from genie.conf import Genie
 
+from genie import metaparser
+
 # To handle errors with connections to devices
 from unicon.core import errors
 
@@ -118,15 +120,20 @@ class VerifyFWBasics(aetest.Testcase):
         log.debug(self.device_to_connect)
 
         for run_command in self.command:
-            self.output[run_command] = self.device_to_connect.parse(run_command)
-            log.debug(f'command = {run_command}')
-
+            log.info(f'command = {run_command}')
+            log.info(self.device_to_connect)
+            try:
+                self.output[run_command] = self.device_to_connect.parse(run_command)
+            except metaparser.util.exceptions.SchemaEmptyParserError:
+                self.output[run_command] = {}
         log.debug(self.output)
 
+        '''
         devices = self.parent.parameters['dev']
         firewalls = [device for device in devices if device.os == 'asa']
         tests_names = [f'Checking "show asp drop" on "{firewall.name}"' for firewall in firewalls]
         aetest.loop.mark(self.check_asp_drop, device=firewalls, uids=tests_names)
+        '''
 
     @aetest.test
     def check_anyconnect_load(self) -> None:
@@ -139,7 +146,7 @@ class VerifyFWBasics(aetest.Testcase):
         self.check_interface_summary_output(run_command)
 
     @aetest.test
-    def check_asp_drop(self, device) -> None:
+    def check_asp_drop(self) -> None:
         run_command = "show asp drop"
         self.check_asp_drop_output(run_command)
 
