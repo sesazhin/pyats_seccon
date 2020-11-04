@@ -125,6 +125,7 @@ class VerifyFWBasics(aetest.Testcase):
         self.output = {}
         self.command = [f'show vpn-sessiondb summary', f'show interface summary', f'show asp drop']
         self.device_to_connect = self.parent.parameters['testbed'].devices[device_name]
+        self.uid = f'Running basic checks on "{self.device_to_connect.name}"'
         log.debug(self.device_to_connect)
 
         for run_command in self.command:
@@ -145,19 +146,16 @@ class VerifyFWBasics(aetest.Testcase):
 
     @aetest.test
     def check_anyconnect_load(self) -> None:
-        self.uid = f'Check Annyconnect load on "{self.device_to_connect.name}"'
         run_command = "show vpn-sessiondb summary"
         self.check_anyconnect_load_output(run_command)
 
     @aetest.test
     def check_interface_summary(self) -> None:
-        self.uid = f'Check interfaces state on "{self.device_to_connect.name}"'
         run_command = "show interface summary"
         self.check_interface_summary_output(run_command)
 
     @aetest.test
     def check_asp_drop(self) -> None:
-        self.uid = f'Check unexpected drops on "{self.device_to_connect.name}"'
         run_command = "show asp drop"
         self.check_asp_drop_output(run_command)
 

@@ -28,8 +28,6 @@ global log
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
-import xml.etree.ElementTree
-
 
 class MyCommonSetup(aetest.CommonSetup):
     """
@@ -56,7 +54,7 @@ class MyCommonSetup(aetest.CommonSetup):
         except KeyError:
             self.failed(banner(
                 f'Unable to find specified device: {device_name} in the topology.'))
-        
+
         if device_to_connect.os == 'asa':
             log.info(banner(f'Connect to device "{device_name}"'))
             try:
@@ -112,6 +110,7 @@ class VerifyGoldenRoutes(aetest.Testcase):
         self.device_to_connect = self.parent.parameters['dev']
         log.info(banner(f'Running command: {self.command}'))
         log.debug(self.device_to_connect)
+        self.uid = f'Running routing checks on "{self.device_to_connect.name}"'
 
         self.output = self.device_to_connect.parse(self.command)
 
