@@ -35,6 +35,14 @@ class common_setup(aetest.CommonSetup):
         except errors.ConnectionError:
             self.failed(f"Failed to establish "
                         f"connection to '{device.name}'")
+        self.parent.parameters['device'] = device
+
+
+class sample_test(aetest.Testcase):
+    @aetest.test
+    def test_parse(self):
+        device = self.parent.parameters['device']
+        log.info(device.parse('show asp drop'))
 
 
 if __name__ == '__main__':
