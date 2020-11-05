@@ -80,6 +80,24 @@ devices:
     custom:
       abstraction:
         order: [os, type]
+        
+  vFTD1:
+    alias: vFTD1
+    os: fxos
+    type: ftd
+    platform: ftd
+
+    connections:
+
+      defaults:
+        class: unicon.Unicon
+      console:
+        protocol: ssh
+        ip: 10.122.111.132
+        port: 22
+    custom:
+      abstraction:
+        order: [os, type]
 
 topology:
   EdgeFW:
