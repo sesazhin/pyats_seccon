@@ -47,7 +47,7 @@ class MyCommonSetup(aetest.CommonSetup):
 
         pass
 
-        
+
         genie_testbed = Genie.init(testbed)
         self.parent.parameters['testbed'] = genie_testbed
         device_list = []
@@ -62,7 +62,7 @@ class MyCommonSetup(aetest.CommonSetup):
             device_list.append(device)
         # Pass list of devices to testcases
         self.parent.parameters.update(dev=device_list)
-        
+
 
 '''
 parameters = {
