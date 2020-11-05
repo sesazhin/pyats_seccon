@@ -98,6 +98,18 @@ devices:
     custom:
       abstraction:
         order: [os, type]
+          
+  CSS-Linux:
+    os: linux
+    type: linux
+    credentials:
+      default:
+        username: "%ENV{PYATS_USERNAME}"
+        password: "%ENV{PYATS_PASSWORD}"
+    connections:
+      linux:
+        protocol: ssh
+        ip: 172.16.50.122
 
 topology:
   EdgeFW:
