@@ -109,7 +109,7 @@ devices:
     connections:
       linux:
         protocol: ssh
-        ip: 172.16.50.122
+        ip: 10.122.111.224
 
 topology:
   EdgeFW:
