@@ -45,9 +45,6 @@ class MyCommonSetup(aetest.CommonSetup):
         :return:
         """
 
-        pass
-
-
         genie_testbed = Genie.init(testbed)
         self.parent.parameters['testbed'] = genie_testbed
         device_list = []
@@ -64,15 +61,6 @@ class MyCommonSetup(aetest.CommonSetup):
         self.parent.parameters.update(dev=device_list)
 
 
-'''
-parameters = {
-    'interface': 'inet',
-    'source_ip': '10.207.195.220',
-    'destination_ip': '198.18.31.192'
-}
-'''
-
-
 class VerifyPacketTracer(aetest.Testcase):
     """
     VerifyPacketTracer Testcase - connect to VPNFW and check whether simulated connection flows fine via firewall
@@ -80,7 +68,7 @@ class VerifyPacketTracer(aetest.Testcase):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
+
         self.command = f'packet-tracer input {self.parent.parameters["interface"]} {self.parent.parameters["protocol"]} {self.parent.parameters["source_ip"]} 6500 {self.parent.parameters["destination_ip"]} 443 xml'
         log.info(banner(f'Running packet-tracer command: {self.command}'))
 
