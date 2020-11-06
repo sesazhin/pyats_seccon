@@ -37,12 +37,11 @@ class MyCommonSetup(aetest.CommonSetup):
 
 
 @aetest.processors.noreport
-def skip_if_not_vpn():
-    try:
-        if testscript.parameters['connection_successful']:
-            return testscript.parameters['connection_successful']
-    except NameError:
+def skip_if_not_vpn(testscript):
+    if not testscript.parameters.get('connection_successful'):
         return False
+    else:
+        return True
 
 
 class VerifyConnectivity(aetest.Testcase):

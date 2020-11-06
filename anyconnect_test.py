@@ -97,7 +97,7 @@ class VerifyAnyconnect(aetest.Testcase):
         self.vpn_connect_command = '/home/admin/pyats/vpn_connect.sh'
 
     @aetest.test
-    def anyconnect_test(self):
+    def anyconnect_test(self, testscript):
 
         log.info(banner('Trying to establish Anyconnect to VPNFW. Please hold on...'))
 
@@ -137,8 +137,12 @@ class VerifyAnyconnectStability(aetest.Testcase):
     @aetest.processors.pre(skip_if_vpn)
     @aetest.test
     def anyconnect_stable_test(self, wait_time):
+        default_wait_time = 2
         log.info(banner(f'Going standby for {wait_time} seconds to check Anyconnect state afterwards'))
-        time.sleep(wait_time)
+        try:
+            time.sleep(int(wait_time))
+        except (ValueError, TypeError):
+            log.error(f'Incorrect value for wait time provided: "{wait_time}". Using default instead: {default_wait_time} seconds')
 
         output_lines = ac_run_command(vpn_status_command)
         connection_status = react_output_status(output_lines)
