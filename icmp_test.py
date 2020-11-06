@@ -36,6 +36,15 @@ class MyCommonSetup(aetest.CommonSetup):
     pass
 
 
+@aetest.processors.noreport
+def skip_if_not_vpn():
+    try:
+        if testscript.parameters['connection_successful']:
+            return testscript.parameters['connection_successful']
+    except NameError:
+        return False
+
+
 class VerifyConnectivity(aetest.Testcase):
     """
     VerifyConnectivity Testcase - check stable connectivity via ICMP to the remote host
@@ -73,11 +82,13 @@ class VerifyConnectivity(aetest.Testcase):
         if not match_drop_rate:
             self.failed("Drop string hasn't been found in the ping output.")
 
+    @aetest.processors.pre(skip_if_not_vpn)
     @aetest.setup
     def prepare_for_ping(self, remote_host) -> None:
         self.command = f'ping {remote_host} -c 10 -s 1400'
         log.info(banner(f'Running command: {self.command}'))
 
+    @aetest.processors.pre(skip_if_not_vpn)
     @aetest.test
     def icmp_test(self) -> None:
         ping_output = self.ping_run_command()

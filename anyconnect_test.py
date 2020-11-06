@@ -29,6 +29,7 @@ log.setLevel(logging.INFO)
 
 from icmp_test import VerifyConnectivity
 
+
 class MyCommonSetup(aetest.CommonSetup):
     """
     CommonSetup class to prepare for testcases
@@ -102,13 +103,17 @@ class VerifyAnyconnect(aetest.Testcase):
 
         output_lines = ac_run_command(self.vpn_connect_command)
         self.connection_successful = react_output_connect(output_lines)
+        testscript.parameters['connection_successful'] = self.connection_successful
         if self.connection_successful:
-            log.info(banner('VPN connection has been established successfully'))
+            self.passed('VPN connection has been established successfully')
+            # log.info(banner('VPN connection has been established successfully'))
         else:
+            '''
             aetest.skip.affix(section=VerifyConnectivity.prepare_for_ping,
                               reason="Skipping 'prepare_for_ping' since VPN connection hasn't been established")
             aetest.skip.affix(section=VerifyConnectivity.icmp_test,
                               reason="Skipping 'icmp_test' since VPN connection hasn't been established")
+            '''
 
             self.failed('Unable to establish VPN connection')
 
